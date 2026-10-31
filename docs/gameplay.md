@@ -68,7 +68,10 @@ Roaches are the level's goal. They have hp like blocks and take damage the same 
 - **Win:** no roaches left. The last one triggers `FINAL_SLOWMO`; the level ends when the world settles.
 - **Lose:** the last shot settles and a roach is still there.
 - **Score** (**Decision:** for destruction, not damage, so the numbers are easy to read): each block destroyed scores its material's `score`, each roach its kind's `score`, and each unused ingredient `UNUSED_INGREDIENT_BONUS` at the end of a won level.
-- **Chef's hats:** 1 for winning; 2 and 3 at the level's own score thresholds (`stars` in the level data).
+- **Chef's hats:** 1 for winning; 2 and 3 at the level's own score thresholds (`stars` in the level data). The thresholds are always visible (**Decision:** [implementation-plan.md › Decisions](implementation-plan.md#decisions), 24):
+  - **While playing,** a bar under the score marks both thresholds with a hat, gold once passed. A lighter stretch after the score shows the bonus the ingredients still left would add with a win right now, so the player sees that winning with fewer shots is what reaches the third hat.
+  - **In the Result,** each hat shows what it asks for (`Win`, then the two scores), the score is broken down into roaches, fort, and ingredients left, and a won level without three hats says how many points the next one needed.
+- **How the thresholds are set** ([level-design.md › The MVP levels](level-design.md#the-mvp-levels)): 2 hats for the roaches and about half of the fort; 3 hats for the roaches, most of the fort, and one ingredient to spare.
 - The best score and hats per level are saved ([technical.md › Global state](technical.md#global-state)).
 
 ## Feedback

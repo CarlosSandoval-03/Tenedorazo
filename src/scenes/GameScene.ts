@@ -32,7 +32,7 @@ import { placeNumber } from "../levels/places";
 import { World, type BodyHandle, type Impact } from "../physics/World";
 import { DEBRIS_LOOKS, Debris, type DebrisLook } from "../systems/Debris";
 import { Blasts } from "../systems/Blasts";
-import { hatsFor, unusedBonus } from "../systems/Scoring";
+import { hatsFor, totalScore, unusedBonus } from "../systems/Scoring";
 import { SHOT, Shot, type ShotEvent, type ShotInput } from "../systems/Shot";
 import { applyImpactDamage } from "../systems/impactDamage";
 import {
@@ -54,6 +54,8 @@ import { ResultScene } from "./ResultScene";
 const HOP_START_OFFSET = 56;
 const HOP_HEIGHT = 40;
 
+type ScorePart = "roaches" | "fort";
+
 const OUTCOME = {
   playing: "playing",
   won: "won",
@@ -68,7 +70,8 @@ export class GameScene implements Scene {
   roaches: Roach[] = [];
   shot: Shot;
   outcome: Outcome = OUTCOME.playing;
-  score = 0;
+  // Scored so far, by part; the bonus for ingredients left comes only with a win.
+  private scored: Record<ScorePart, number> = { roaches: 0, fort: 0 };
   queue: IngredientKind[] = [];
   // The last tick's impacts, kept for the shake and the debug view.
   lastImpacts: readonly Impact[] = [];
@@ -101,6 +104,10 @@ export class GameScene implements Scene {
     this.level = level;
     this.shot = new Shot(this.world, level.launcher);
     this.launcher = new Launcher(level.launcher);
+  }
+
+  get score(): number {
+    return this.scored.roaches + this.scored.fort;
   }
 
   get timeScale(): number {
@@ -151,7 +158,13 @@ export class GameScene implements Scene {
     this.floatingNumbers.draw(p);
     p.pop();
 
-    drawHUD(p, { ingredientsLeft: this.ingredientsLeft(), score: this.score });
+    const ingredientsLeft = this.ingredientsLeft();
+    drawHUD(p, {
+      ingredientsLeft,
+      score: this.score,
+      pendingBonus: unusedBonus(ingredientsLeft.length),
+      stars: this.level.stars,
+    });
     if (this.hintFor) drawHint(p, t(`hints.${this.hintFor}`));
     this.pauseMenu?.draw(p);
   }
@@ -179,7 +192,7 @@ export class GameScene implements Scene {
     this.hintFor = null;
     this.wasHintShown = false;
     this.outcome = OUTCOME.playing;
-    this.score = 0;
+    this.scored = { roaches: 0, fort: 0 };
     this.floatingNumbers = new FloatingNumbers();
     this.pauseMenu = null;
     this.loadNext();
@@ -333,12 +346,16 @@ export class GameScene implements Scene {
   // A destroyed pressure cooker queues its blast for the next tick.
   private removeDestroyed(): void {
     const hadRoaches = this.roaches.length > 0;
-    this.blocks = this.prune(this.blocks, (block) => {
+    this.blocks = this.prune(this.blocks, "fort", (block) => {
       const blast = block.blastOnDestroy();
       if (blast) this.blasts.request(blast);
       return DEBRIS_LOOKS[block.material];
     });
-    this.roaches = this.prune(this.roaches, () => DEBRIS_LOOKS.roach);
+    this.roaches = this.prune(
+      this.roaches,
+      "roaches",
+      () => DEBRIS_LOOKS.roach,
+    );
     if (hadRoaches && this.roaches.length === 0)
       this.slowmoFrames = FINAL_SLOWMO_FRAMES;
   }
@@ -347,22 +364,23 @@ export class GameScene implements Scene {
   // the world, and returns the debris.
   private prune<T extends Destructible>(
     targets: T[],
+    part: ScorePart,
     onDestroyed: (target: T) => DebrisLook,
   ): T[] {
     for (const target of targets) {
       if (target.alive) continue;
       const position = this.world.position(target.body);
       this.debris.burst(position, onDestroyed(target));
-      this.addScore(target.score, position);
+      this.addScore(part, target.score, position);
       this.world.remove(target.body);
       this.destructibles.delete(target.body);
     }
     return targets.filter((target) => target.alive);
   }
 
-  private addScore(points: number, at: Vec): void {
+  private addScore(part: ScorePart, points: number, at: Vec): void {
     if (points === 0) return;
-    this.score += points;
+    this.scored = { ...this.scored, [part]: this.scored[part] + points };
     this.floatingNumbers.spawn(points, at);
   }
 
@@ -404,8 +422,11 @@ export class GameScene implements Scene {
   private showResult(): void {
     const { progress, scenes } = this.context;
     const isWon = this.outcome === OUTCOME.won;
-    const unused = isWon ? this.ingredientsLeft().length : 0;
-    const score = this.score + unusedBonus(unused);
+    const breakdown = {
+      ...this.scored,
+      ingredientsLeft: isWon ? this.ingredientsLeft().length : 0,
+    };
+    const score = totalScore(breakdown);
     const hats = isWon ? hatsFor(score, this.level.stars) : 0;
     const recorded = isWon
       ? progress.recordWin(this.level.id, score, hats)
@@ -414,7 +435,7 @@ export class GameScene implements Scene {
       new ResultScene(this.context, {
         level: this.level,
         isWon,
-        score,
+        breakdown,
         hats,
         best: recorded?.best ?? progress.of(this.level.id),
         isFirstWin: recorded?.isFirstWin ?? false,

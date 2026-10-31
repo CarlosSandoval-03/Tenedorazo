@@ -3,6 +3,7 @@ import { CANVAS_WIDTH, PALETTE } from "../config";
 import type { Vec } from "../core/math";
 import { drawIngredientLook } from "../entities/ingredientLooks";
 import type { ProjectileKind } from "../types";
+import { drawScoreBar } from "./ScoreBar";
 
 const MARGIN = 28;
 const ICON_SPACING = 40;
@@ -12,14 +13,19 @@ const HINT_SIZE = 22;
 const SCORE_SIZE = 28;
 const PAUSE_SIZE = 40;
 const PAUSE_CENTER = { x: CANVAS_WIDTH - MARGIN - 4, y: MARGIN + 4 };
+const BAR_WIDTH = 220;
+const BAR_TOP = 58;
 
 export interface HudState {
   ingredientsLeft: readonly ProjectileKind[];
   score: number;
+  // What a win right now would add.
+  pendingBonus: number;
+  stars: readonly [number, number];
 }
 
-// The ingredients left along the top left, the next one first; the score and the pause button
-// along the top right.
+// The ingredients left along the top left, the next one first; the score, its hat bar, and the
+// pause button along the top right.
 export function drawHUD(p: p5, state: HudState): void {
   state.ingredientsLeft.forEach((kind, i) => {
     p.push();
@@ -29,6 +35,15 @@ export function drawHUD(p: p5, state: HudState): void {
     p.pop();
   });
   drawScore(p, state.score);
+  drawScoreBar(
+    p,
+    {
+      left: PAUSE_CENTER.x + PAUSE_SIZE / 2 - BAR_WIDTH,
+      top: BAR_TOP,
+      width: BAR_WIDTH,
+    },
+    state,
+  );
   drawPauseButton(p);
 }
 

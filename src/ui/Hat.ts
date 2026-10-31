@@ -3,10 +3,16 @@ import { PALETTE } from "../config";
 import type { Vec } from "../core/math";
 
 const OUTLINE_WEIGHT = 4;
-const HAT_SPACING = 1.4;
+// Hats in a row sit this many hat sizes apart.
+export const HAT_SPACING = 1.4;
 
 // A chef's hat: a puffy top over a band, gold when earned, dark when not.
-function drawHat(p: p5, center: Vec, size: number, isEarned: boolean): void {
+export function drawHat(
+  p: p5,
+  center: Vec,
+  size: number,
+  isEarned: boolean,
+): void {
   p.push();
   p.translate(center.x, center.y);
   p.scale(size / 2);
