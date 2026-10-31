@@ -17,8 +17,8 @@ Every step ends with something playable and a version bump ([technical.md › Gi
 | 6 | The run: Title, Level select, Result, Ending, score and hats, saved progress, pause | `0.7.0` | Done |
 | — | **MVP**: the five levels playable from the Title to the Ending, deployed | `0.7.0` | Done (deploy pending the first push) |
 | 7 | Visible hats: the hat bar in the HUD, the score breakdown in the Result | `0.8.0` | Done |
-| 8 | Camera: levels wider than one screen, the opening pan, following the flight, pan and zoom | `0.9.0` | Next |
-| 9 | The counter in full: the Place select and levels 1-2 to 1-4 | `0.10.0` | — |
+| 8 | Camera: levels wider than one screen, the opening pan, following the flight, pan and zoom | `0.9.0` | Done |
+| 9 | The counter in full: the Place select and levels 1-2 to 1-4 | `0.10.0` | Next |
 | 10 | Look: a night kitchen per place with parallax, richer materials, ingredients, and roaches | `0.11.0` | — |
 
 ---
