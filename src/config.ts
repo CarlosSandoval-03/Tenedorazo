@@ -80,33 +80,35 @@ export interface RoachSpec extends PhysicalMaterial {
 
 const ROACH_BODY = { density: 0.001, friction: 0.8, restitution: 0.25 };
 const ROACH_HP = 20;
+// Squishy: a falling board is enough to squash a plain one.
+const ROACH_FRAGILITY = 2;
 
 export const ROACHES: Readonly<Record<RoachKind, RoachSpec>> = {
   roach: {
     ...ROACH_BODY,
     hp: ROACH_HP,
-    fragility: 1,
+    fragility: ROACH_FRAGILITY,
     radius: 16,
     score: 1000,
   },
   capped: {
     ...ROACH_BODY,
     hp: ROACH_HP * 2,
-    fragility: 1,
+    fragility: ROACH_FRAGILITY,
     radius: 16,
     score: 1500,
   },
   colander: {
     ...ROACH_BODY,
     hp: ROACH_HP * 4,
-    fragility: 1,
+    fragility: ROACH_FRAGILITY,
     radius: 16,
     score: 2500,
   },
   queen: {
     ...ROACH_BODY,
     hp: ROACH_HP * 10,
-    fragility: 1,
+    fragility: ROACH_FRAGILITY,
     radius: 32,
     score: 10000,
   },
