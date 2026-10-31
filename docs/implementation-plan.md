@@ -16,6 +16,9 @@ Every step ends with something playable and a version bump ([technical.md › Gi
 | 5 | Abilities and kitchen materials: the other four ingredients, jelly, pressure cookers, armored roaches and the Queen; levels 2-1 to 5-1 | `0.6.0` | Done |
 | 6 | The run: Title, Level select, Result, Ending, score and hats, saved progress, pause | `0.7.0` | Done |
 | — | **MVP**: the five levels playable from the Title to the Ending, deployed | `0.7.0` | Done (deploy pending the first push) |
+| 7 | Visible hats: the hat bar in the HUD, the score breakdown in the Result | `0.8.0` | Next |
+| 8 | Camera: levels wider than one screen, the opening pan, following the flight, pan and zoom | `0.9.0` | — |
+| 9 | The counter in full: the Place select and levels 1-2 to 1-4 | `0.10.0` | — |
 
 ---
 
@@ -280,12 +283,75 @@ class World {
 
 ---
 
+## Step 7: Visible hats (`0.8.0`)
+
+**Goal:** the player always knows what each hat asks for and how far away it is.
+
+### Files
+
+| File | In this step |
+| ---- | ------------ |
+| `systems/Scoring.ts` (+ test) | `ScoreBreakdown` (roaches, fort, ingredients left) and its total; `pointsToNextHat(score, stars)`. |
+| `ui/ScoreBar.ts` | The hat bar under the score: the score so far, a lighter stretch for the bonus of the ingredients still left (what a win right now would add), and a hat mark at each threshold, gold once passed. |
+| `scenes/GameScene.ts`, `scenes/ResultScene.ts` | The score kept by part; the Result lists the breakdown, shows each hat's requirement under it, and says how many points the next hat needed. |
+| `i18n/` | The breakdown and requirement texts. |
+
+### Done when
+- [ ] While playing, the bar shows where the 2- and 3-hat thresholds are and how close the current score, with the ingredients left, is to each.
+- [ ] A won level with 2 hats says how many points were missing for the third, and where the score came from.
+
+---
+
+## Step 8: Camera (`0.9.0`)
+
+**Goal:** levels wider than one screen, framed so the player always sees what matters.
+
+### Files
+
+| File | In this step |
+| ---- | ------------ |
+| `core/Camera.ts` (+ test) | A left edge and a zoom, eased toward a target each tick; level ↔ screen conversion; clamped to the level's width. |
+| `core/Input.ts` (+ test) | The wheel, as zoom in and out actions. |
+| `scenes/GameScene.ts` | The camera's targets: the opening pan, the fork while aiming, the ingredient in flight, the fort while settling. Dragging away from the band, or A / D, pans; the wheel or W / S zooms. |
+| `debug/` | Drawn through the camera. |
+| `config.ts` | `INTRO_PAN_FRAMES`, `CAMERA_EASE`, `MIN_ZOOM`, `PAN_SPEED`, `ZOOM_STEP`, `FOLLOW_AHEAD`. |
+
+### Specification
+
+- **Decision:** the floor stays at `FLOOR_SCREEN_Y`; zooming scales the level around the floor's line, so the counter never leaves the bottom of the screen. The counter is drawn past the level's ends when the view is wider than the level.
+- The player's pan and zoom hold until the next launch.
+
+### Done when
+- [ ] A level twice the screen's width opens on its fort and pans back to the fork.
+- [ ] The flight is always on screen, and the collapse is framed while it settles.
+- [ ] Every one-screen level plays exactly as before.
+
+---
+
+## Step 9: The counter in full (`0.10.0`)
+
+**Goal:** the first place with its full curve: four levels.
+
+### Files
+
+| File | In this step |
+| ---- | ------------ |
+| `scenes/PlaceSelectScene.ts` | The five places with their hats; locked ones dimmed. |
+| `scenes/LevelSelectScene.ts` | The levels of one place. |
+| `levels/1-2.json` to `1-4.json` | The counter's curve ([level-design.md › Difficulty curve](level-design.md#difficulty-curve)), wider than one screen. |
+| `scenes/GameScene.ts` | The place's hint only in its first level. |
+
+### Done when
+- [ ] Each new level passes validation and the self-collapse test, and is winnable with one meatball to spare.
+- [ ] Unlocks run through the levels in order, across places.
+
+---
+
 ## After the MVP
 
-Not planned yet. Each one becomes a step when the MVP is done, in the order that serves the game.
+Not planned yet. Each one becomes a step when the one before is done, in the order that serves the game.
 
-- **More levels:** up to `LEVELS_PER_PLACE` per place, with the curve in [level-design.md › Difficulty curve](level-design.md#difficulty-curve); the Place select.
-- **Camera:** levels wider than one screen, following the flight, pan and zoom, the level's opening pan.
+- **More levels:** the other places' curves, up to four levels each, as in step 9.
 - **Look:** the night kitchen background, illustrations for the Title, the Intros, and the Ending.
 - **Sound:** every sound in [art-direction.md › Sound](art-direction.md#sound).
 - **Keyboard aiming:** arrows for angle and pull.
@@ -302,7 +368,7 @@ Not planned yet. Each one becomes a step when the MVP is done, in the order that
 | 3 | Two substeps per tick against tunneling; sleeping off, settling by speed | 1 | Open |
 | 4 | The engine isolated behind `physics/World`; plain `Vec` in px and px/s everywhere else | 1 | Confirmed |
 | 5 | 960 × 540 canvas, scaled to fit, letterboxed | 0 | Open |
-| 6 | MVP levels fit one screen; no camera until after the MVP | 1 | Open |
+| 6 | MVP levels fit one screen; no camera until after the MVP | 1 | Replaced by 25 |
 | 7 | The launch sets a creation velocity (mass-independent), not an impulse | 2 | Open |
 | 8 | The aim preview is the engine's own flight in a scratch world | 2 | Open |
 | 9 | The ingredient has no body until it is released; the spent one is removed when the shot settles | 2 | Open |
@@ -320,3 +386,6 @@ Not planned yet. Each one becomes a step when the MVP is done, in the order that
 | 21 | One rounded font (Fredoka, OFL) | 6 | Open |
 | 22 | Two languages (en, es) from typed data files | 3 | Open |
 | 23 | PolyForm Noncommercial 1.0.0, as in the previous project | 0 | Confirmed |
+| 24 | The hat thresholds stay per level, and are shown: a hat bar while playing, a breakdown in the Result | 7 | Confirmed |
+| 25 | Levels can be wider than one screen, with a camera (replaces 6 from step 8 on) | 8 | Confirmed |
+| 26 | More levels one place at a time, the counter first, with a Place select | 9 | Confirmed |
