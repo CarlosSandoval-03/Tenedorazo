@@ -8,8 +8,8 @@ Every step ends with something playable and a version bump ([technical.md › Gi
 
 | Step | Delivers | Version | Status |
 | ---- | -------- | ------- | ------ |
-| 0 | Scaffold: Vite, TypeScript, p5, Matter.js, hooks, CI and deploy; a box falling on a floor | `0.1.0` | Next |
-| 1 | Physics sandbox: `World`, the fixed tick, a fort that stands still, debug draw | `0.2.0` | — |
+| 0 | Scaffold: Vite, TypeScript, p5, Matter.js, hooks, CI and deploy; a box falling on a floor | `0.1.0` | Done |
+| 1 | Physics sandbox: `World`, the fixed tick, a fort that stands still, debug draw | `0.2.0` | Next |
 | 2 | The shot: the fork, pull, aim preview, launch, settle, the meatball | `0.3.0` | — |
 | 3 | Damage: impulses to hp, damage states, roaches, win and lose, restart, HUD | `0.4.0` | — |
 | 4 | Levels as data: loader, validation, the self-collapse test, level 1-1 from JSON | `0.5.0` | — |
