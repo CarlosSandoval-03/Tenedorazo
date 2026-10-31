@@ -5,6 +5,7 @@ import { LEVELS } from "../levels";
 import type { BodyHandle } from "../physics/World";
 import type { GameContext } from "../scenes/GameContext";
 import { GameScene } from "../scenes/GameScene";
+import { INGREDIENT_KINDS } from "../types";
 import { levelAsBuilt } from "./levelAsBuilt";
 
 // The velocity a drag gives the pushed body, per px dragged (1/s).
@@ -53,11 +54,21 @@ export class DebugTools {
     p.pop();
   }
 
-  // &level=3-1 opens that level directly.
+  // &level=3-1 opens that level directly; &ingredients=popcorn,cheese replaces its queue.
   private openLevelFromUrl(): void {
-    const id = new URLSearchParams(location.search).get("level");
-    const level = LEVELS.find((candidate) => candidate.id === id);
-    if (level) this.context.scenes.change(new GameScene(this.context, level));
+    const params = new URLSearchParams(location.search);
+    const level =
+      LEVELS.find((candidate) => candidate.id === params.get("level")) ??
+      this.gameScene()?.level;
+    if (!level) return;
+    const ingredients = params
+      .get("ingredients")
+      ?.split(",")
+      .flatMap((name) => INGREDIENT_KINDS.filter((kind) => kind === name));
+    const queue = ingredients?.length ? ingredients : level.ingredients;
+    this.context.scenes.change(
+      new GameScene(this.context, { ...level, ingredients: queue }),
+    );
   }
 
   private onKeyDown(code: string): void {
