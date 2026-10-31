@@ -10,6 +10,10 @@ const GLASS_ALPHA = 170;
 const GRAIN_SPACING = 6;
 const RIM_INSET = 4;
 const CRACK_WEIGHT = 2;
+const JELLY_ALPHA = 200;
+const JELLY_CORNER_RADIUS = 10;
+const VALVE_WIDTH = 10;
+const VALVE_HEIGHT = 12;
 const FLASH_ALPHA = 200;
 
 // Crack polylines as fractions of the block's half size, so they fit any shape.
@@ -79,6 +83,8 @@ const LOOKS: Record<MaterialKind, (p: p5, shape: ShapeDef) => void> = {
   glass: drawGlass,
   wood: drawWood,
   castIron: drawCastIron,
+  jelly: drawJelly,
+  pressureCooker: drawPressureCooker,
 };
 
 function drawGlass(p: p5, shape: ShapeDef): void {
@@ -128,6 +134,40 @@ function drawCastIron(p: p5, shape: ShapeDef): void {
   if (shape.type === "circle") p.circle(0, 0, width - RIM_INSET * 2);
   else
     p.rect(0, 0, width - RIM_INSET * 2, height - RIM_INSET * 2, CORNER_RADIUS);
+}
+
+function drawJelly(p: p5, shape: ShapeDef): void {
+  const fill = p.color(PALETTE.jelly.fill);
+  fill.setAlpha(JELLY_ALPHA);
+  p.fill(fill);
+  const { width, height } = boundsOf(shape);
+  if (shape.type === "circle") p.circle(0, 0, width);
+  else p.rect(0, 0, width, height, JELLY_CORNER_RADIUS);
+
+  // A soft shine in the top left corner.
+  p.noStroke();
+  p.fill(PALETTE.jelly.shine);
+  p.ellipse(-width / 4, -height / 4, width / 4, height / 6);
+}
+
+function drawPressureCooker(p: p5, shape: ShapeDef): void {
+  const { width, height } = boundsOf(shape);
+  // The valve sits on top, so it turns with the pot.
+  p.fill(PALETTE.steel.valve);
+  p.rect(0, -height / 2, VALVE_WIDTH, VALVE_HEIGHT, 2);
+
+  p.fill(PALETTE.steel.fill);
+  drawSilhouette(p, shape);
+  p.noFill();
+  p.stroke(PALETTE.steel.rim);
+  p.strokeWeight(2);
+  p.line(
+    -width / 2 + RIM_INSET,
+    -height / 6,
+    width / 2 - RIM_INSET,
+    -height / 6,
+  );
+  p.line(-width / 2 + RIM_INSET, height / 6, width / 2 - RIM_INSET, height / 6);
 }
 
 export function drawSilhouette(p: p5, shape: ShapeDef): void {

@@ -20,7 +20,8 @@ export abstract class Destructible extends Entity {
   readonly maxHp: number;
   readonly fragility: number;
   hp: number;
-  private flashFrames = 0;
+  // Ticks since the last hit that did damage; drives the flash and the jelly's wobble.
+  ticksSinceHit = Infinity;
 
   constructor(body: BodyHandle, toughness: Toughness) {
     super();
@@ -31,17 +32,23 @@ export abstract class Destructible extends Entity {
   }
 
   get isFlashing(): boolean {
-    return this.flashFrames > 0;
+    return this.ticksSinceHit < HIT_FLASH_FRAMES;
+  }
+
+  // Infinite hp (jelly): hits still flash and wobble, but it never cracks or breaks.
+  get isUnbreakable(): boolean {
+    return this.maxHp === Infinity;
   }
 
   damage(amount: number): void {
     if (amount <= 0) return;
     this.hp -= amount;
-    this.flashFrames = HIT_FLASH_FRAMES;
+    this.ticksSinceHit = 0;
     if (this.hp <= 0) this.alive = false;
   }
 
   damageState(): DamageState {
+    if (this.isUnbreakable) return DAMAGE_STATE.intact;
     const fraction = this.hp / this.maxHp;
     if (fraction < DAMAGE_STATES.broken) return DAMAGE_STATE.broken;
     if (fraction < DAMAGE_STATES.cracked) return DAMAGE_STATE.cracked;
@@ -49,6 +56,6 @@ export abstract class Destructible extends Entity {
   }
 
   update(): void {
-    if (this.flashFrames > 0) this.flashFrames--;
+    this.ticksSinceHit++;
   }
 }

@@ -47,7 +47,7 @@ Every block has a material. Properties live in one table in `config.ts` (`MATERI
 | Glass | Glasses (box), plates (thin box) | Low | Low | Low | Very low | Shatters into shards |
 | Wood | Cutting boards, pillars (box) | Medium | Medium | Low | Medium | Splinters |
 | Cast iron | Pans, pots (box, circle) | High | High | Very low | High | Breaks into chunks |
-| Jelly | Blocks (box) | Low | High | Very high | Unbreakable | — (wobbles on every hit) |
+| Jelly | Blocks (box) | Low | High | Very high | Unbreakable (infinite hp) | — (wobbles on every hit) |
 | Pressure cooker | Pots (circle) | Medium | Medium | Low | Low | Explodes: a blast like the popcorn's |
 
 Blocks show damage in three states, intact, cracked, and broken, by hp fraction (`DAMAGE_STATES`). Debris is visual only, never physics.

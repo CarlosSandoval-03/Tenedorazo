@@ -74,7 +74,7 @@ Matter's accumulated contact impulse is reset to zero on fast hits, so it can't 
 
 The popcorn's pop and a destroyed pressure cooker both make a blast at a point.
 
-- Every dynamic body whose center is within the blast's radius gets a velocity change away from the center of `strength × falloff / mass` (an impulse) and damage of `BLAST_DAMAGE × falloff`, where `falloff = 1 − distance / radius`. Line of sight is ignored.
+- Every dynamic body whose center is within the blast's radius gets a velocity change away from the center of `strength × falloff / mass` (an impulse) and damage of `BLAST_DAMAGE × falloff × fragility`, where `falloff = 1 − distance / radius`, so cast iron shrugs a blast off as it does a hit. Line of sight is ignored.
 - **Chains:** a pressure cooker destroyed by a blast queues its own blast for the **next** tick, never the same one, so a chain unfolds one tick at a time and can't recurse.
 - `blastFalloff(distance, radius)` is a pure function with tests.
 
@@ -84,9 +84,9 @@ Abilities are discrete events, like the launch; they run between ticks.
 
 | Ability | What `World` does |
 | ------- | ----------------- |
-| Pea pod split | Remove the pod; create `PEA_COUNT` peas at its position, each with its velocity rotated by `−PEA_SPREAD`, `0`, `+PEA_SPREAD`. |
+| Pea pod split | Remove the pod; create `PEA_COUNT` peas side by side across its heading (so they never overlap), each with its velocity rotated by `−PEA_SPREAD`, `0`, `+PEA_SPREAD`. |
 | Chili boost | Add `CHILI_BOOST` px/s along its current heading (`world.addVelocity`). |
-| Cheese spin | Set the angular velocity to `CHEESE_SPIN` rad/s; its friction makes it roll on landing. |
+| Cheese spin | Set the angular velocity to `CHEESE_SPIN` rad/s (`world.setAngularVelocity`); its friction makes it roll on landing. |
 | Popcorn pop | A blast at its position; remove it. |
 
 ## Settling

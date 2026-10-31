@@ -24,7 +24,7 @@ export interface DebrisLook {
 
 // What each thing leaves behind when it breaks or goes.
 export const DEBRIS_LOOKS: Readonly<
-  Record<MaterialKind | "roach" | "puff", DebrisLook>
+  Record<MaterialKind | "roach" | "puff" | "blast", DebrisLook>
 > = {
   glass: {
     shape: "shard",
@@ -41,12 +41,24 @@ export const DEBRIS_LOOKS: Readonly<
     colors: [PALETTE.castIron.fill, PALETTE.castIron.rim],
     size: 7,
   },
+  // Jelly never breaks; the entry keeps the table total.
+  jelly: { shape: "puff", colors: [PALETTE.jelly.fill], size: 10 },
+  pressureCooker: {
+    shape: "chunk",
+    colors: [PALETTE.steel.fill, PALETTE.steel.valve],
+    size: 9,
+  },
   roach: {
     shape: "chunk",
     colors: [PALETTE.roach.shell, PALETTE.roach.highlight],
     size: 6,
   },
   puff: { shape: "puff", colors: [PALETTE.ui.text], size: 10 },
+  blast: {
+    shape: "puff",
+    colors: [PALETTE.ui.text, PALETTE.ingredients.chili],
+    size: 22,
+  },
 };
 
 interface Piece {

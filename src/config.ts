@@ -1,5 +1,5 @@
 import type { PhysicalMaterial, ShapeDef } from "./physics/World";
-import type { IngredientKind, MaterialKind, RoachKind } from "./types";
+import type { MaterialKind, ProjectileKind, RoachKind } from "./types";
 
 export const CANVAS_WIDTH = 960;
 export const CANVAS_HEIGHT = 540;
@@ -29,13 +29,28 @@ export const BLOCK_UNIT = 16;
 export const SETTLE_CHECK_FRAMES = 300;
 export const SETTLE_TOLERANCE = 2;
 
+// A blast pushes every dynamic body within its radius away from its center.
+export interface BlastSpec {
+  readonly radius: number;
+  // The impulse at the center (mass × px/s), falling off to 0 at the radius.
+  readonly strength: number;
+}
+
 export interface MaterialSpec extends PhysicalMaterial {
+  // Infinity for a material that never breaks.
   readonly hp: number;
-  // How much of an impact's damage this side takes.
+  // How much of an impact's or blast's damage this side takes.
   readonly fragility: number;
   // Scored when a block of it is destroyed.
   readonly score: number;
+  // The blast it makes when destroyed, if it explodes.
+  readonly blast?: BlastSpec;
 }
+
+// The damage at a blast's center, scaled by the falloff and the target's fragility.
+export const BLAST_DAMAGE = 80;
+export const POP_BLAST: BlastSpec = { radius: 128, strength: 2400 };
+export const COOKER_BLAST: BlastSpec = { radius: 160, strength: 3000 };
 
 export const MATERIALS: Readonly<Record<MaterialKind, MaterialSpec>> = {
   glass: {
@@ -61,6 +76,24 @@ export const MATERIALS: Readonly<Record<MaterialKind, MaterialSpec>> = {
     hp: 200,
     fragility: 0.5,
     score: 500,
+  },
+  // Bounces everything that hits it, since Matter keeps a pair's larger restitution.
+  jelly: {
+    density: 0.0009,
+    friction: 0.9,
+    restitution: 0.9,
+    hp: Infinity,
+    fragility: 1,
+    score: 0,
+  },
+  pressureCooker: {
+    density: 0.002,
+    friction: 0.6,
+    restitution: 0.1,
+    hp: 12,
+    fragility: 1,
+    score: 300,
+    blast: COOKER_BLAST,
   },
 };
 
@@ -148,7 +181,7 @@ export interface IngredientSpec extends PhysicalMaterial {
   readonly shape: ShapeDef;
 }
 
-export const INGREDIENTS: Readonly<Record<IngredientKind, IngredientSpec>> = {
+export const INGREDIENTS: Readonly<Record<ProjectileKind, IngredientSpec>> = {
   meatball: {
     shape: { type: "circle", radius: 14 },
     density: 0.003,
@@ -179,7 +212,21 @@ export const INGREDIENTS: Readonly<Record<IngredientKind, IngredientSpec>> = {
     friction: 0.5,
     restitution: 0.4,
   },
+  pea: {
+    shape: { type: "circle", radius: 6 },
+    density: 0.004,
+    friction: 0.5,
+    restitution: 0.3,
+  },
 };
+
+// The abilities. The pod splits into PEA_COUNT peas fanned PEA_SPREAD radians apart.
+export const PEA_COUNT = 3;
+export const PEA_SPREAD = 0.18;
+// px/s added along the chili's heading.
+export const CHILI_BOOST = 700;
+// rad/s, clockwise: the wheel rolls on toward the fort when it lands.
+export const CHEESE_SPIN = 28;
 
 // Matter has no rolling resistance: after its first hit, air drag is what stops an ingredient rolling.
 export const LANDED_FRICTION_AIR = 0.02;
@@ -213,10 +260,14 @@ export const PALETTE = {
   glass: { fill: "#bfe9f0", shine: "#ffffff" },
   wood: { fill: "#c98b45", grain: "#8a5a2b" },
   castIron: { fill: "#2b2d31", rim: "#7d8790" },
+  jelly: { fill: "#e0336b", shine: "#ff8fb2" },
+  steel: { fill: "#b9c2c9", rim: "#7f8a92", valve: "#d6403a" },
   roach: { shell: "#6a3fb5", highlight: "#b79cf0", eyes: "#ffd84a" },
+  cap: { fill: "#d6403a", rim: "#8e2a22" },
+  crown: { fill: "#f5c242", jewel: "#5fd0c8" },
   crack: "#0e1417",
   flash: "#ffffff",
-  fork: { metal: "#c4ccd2", shade: "#8b969e", band: "#c8423c" },
+  fork: { metal: "#c4ccd2", band: "#c8423c" },
   ingredients: {
     outline: "#fff1cc",
     meatball: "#8b4a2b",
@@ -224,6 +275,9 @@ export const PALETTE = {
     chili: "#e8641c",
     cheese: "#f2c037",
     popcorn: "#fff4d6",
+    pea: "#7cc24a",
+    detail: "#3b2a1f",
+    eyeWhite: "#ffffff",
   },
   preview: "#fff1cc",
   ui: { text: "#fff1cc", dim: "#8a9a9e", gold: "#f5c242", panel: "#0e1a1f" },

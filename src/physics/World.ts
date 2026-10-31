@@ -8,7 +8,7 @@ import {
   TICK_MS,
   VELOCITY_ITERATIONS,
 } from "../config";
-import { length, type Vec } from "../core/math";
+import { length, scale, type Vec } from "../core/math";
 
 export interface PhysicalMaterial {
   readonly density: number;
@@ -144,6 +144,19 @@ export class World {
     });
   }
 
+  // rad/s.
+  setAngularVelocity(handle: BodyHandle, angularVelocity: number): void {
+    Matter.Body.setAngularVelocity(
+      this.body(handle),
+      angularVelocity / PER_SECOND,
+    );
+  }
+
+  // A kick that changes the velocity by impulse / mass, so heavy bodies barely move.
+  applyImpulse(handle: BodyHandle, impulse: Vec): void {
+    this.addVelocity(handle, scale(impulse, 1 / this.mass(handle)));
+  }
+
   setFrictionAir(handle: BodyHandle, frictionAir: number): void {
     this.body(handle).frictionAir = frictionAir;
   }
@@ -162,6 +175,10 @@ export class World {
 
   handles(): BodyHandle[] {
     return [...this.bodies.keys()];
+  }
+
+  dynamicBodies(): BodyHandle[] {
+    return this.handles().filter((handle) => !this.isStatic(handle));
   }
 
   isStatic(handle: BodyHandle): boolean {

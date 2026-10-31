@@ -8,8 +8,8 @@ class Target extends Destructible {
   draw(_p: p5): void {}
 }
 
-function target(): Target {
-  return new Target(new BodyHandle(), { hp: 100, fragility: 1 });
+function target(hp = 100): Target {
+  return new Target(new BodyHandle(), { hp, fragility: 1 });
 }
 
 describe("Destructible", () => {
@@ -37,5 +37,15 @@ describe("Destructible", () => {
     block.update();
 
     expect(block.isFlashing).toBe(false);
+  });
+
+  it("never breaks with infinite hp", () => {
+    const jelly = target(Infinity);
+
+    jelly.damage(1e9);
+
+    expect(jelly.alive).toBe(true);
+    expect(jelly.damageState()).toBe(DAMAGE_STATE.intact);
+    expect(jelly.isFlashing).toBe(true);
   });
 });

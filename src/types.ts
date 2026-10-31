@@ -1,4 +1,10 @@
-export const MATERIAL_KINDS = ["glass", "wood", "castIron"] as const;
+export const MATERIAL_KINDS = [
+  "glass",
+  "wood",
+  "castIron",
+  "jelly",
+  "pressureCooker",
+] as const;
 export type MaterialKind = (typeof MATERIAL_KINDS)[number];
 
 export const ROACH_KINDS = ["roach", "capped", "colander", "queen"] as const;
@@ -13,6 +19,9 @@ export const INGREDIENT_KINDS = [
   "popcorn",
 ] as const;
 export type IngredientKind = (typeof INGREDIENT_KINDS)[number];
+
+// What flies: the ingredients, and the peas a pod splits into.
+export type ProjectileKind = IngredientKind | "pea";
 
 export interface LevelPoint {
   x: number;
