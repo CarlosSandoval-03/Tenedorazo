@@ -79,11 +79,11 @@ Five levels, `1-1.json` to `5-1.json`, one per place. Each is 960 px wide (one s
 | ----- | ----- | ----- | -------- | ------- |
 | 1-1 | Counter | 3 meatballs | A wooden table with a glass on top; a glass with a plate beside it | 3 |
 | 2-1 | Sink | 2 pea pods, 1 meatball | Three towers of glasses and plates, two of them two storeys | 3 |
-| 3-1 | Stove | 3 chilis | Cast-iron pillars under a wooden board, a pan on top; a roach behind a thin wooden wall | 3, one capped |
-| 4-1 | Fridge | 2 cheese wheels, 1 chili | A wall of jelly, a wooden table, a jelly at the back | 4, one with a colander |
+| 3-1 | Stove | 3 chilis | Cast-iron pillars under a wooden board, a pan on top; a roach behind a thin wooden wall in front of the fort | 3, one capped, on the board beside the pan, so it falls when the board breaks |
+| 4-1 | Fridge | 2 cheese wheels, 1 chili | A wall of jelly, a wooden table, a jelly at the back | 3, one with a colander on the table |
 | 5-1 | Pantry | 2 popcorns, 1 chili, 1 cheese | The Queen's palace: cast-iron walls, a board, glasses, three pressure cookers | The Queen, one capped, one roach |
 
-The hat thresholds were set from the MVP's score values ([implementation-plan.md › Step 6](implementation-plan.md#step-6-the-run-070--mvp)): 2 hats for the roaches and half of the fort, 3 hats for the roaches, most of the fort, and one ingredient to spare.
+Each level was checked winnable with one ingredient to spare by a search over simulated shots (angles, pulls, and ability timings). The hat thresholds were set from the MVP's score values ([implementation-plan.md › Step 6](implementation-plan.md#step-6-the-run-070--mvp)): 2 hats for the roaches and half of the fort, 3 hats for the roaches, most of the fort, and one ingredient to spare.
 
 ## Readability
 

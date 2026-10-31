@@ -8,6 +8,8 @@ import {
 import level1x1 from "./1-1.json";
 import level2x1 from "./2-1.json";
 import level3x1 from "./3-1.json";
+import level4x1 from "./4-1.json";
+import level5x1 from "./5-1.json";
 
 // A level file as JSON types it: every kind is a plain string until it is checked.
 interface RawLevel {
@@ -28,9 +30,13 @@ interface RawLevel {
 }
 
 // In play order.
-export const LEVELS: readonly LevelDef[] = [level1x1, level2x1, level3x1].map(
-  parseLevel,
-);
+export const LEVELS: readonly LevelDef[] = [
+  level1x1,
+  level2x1,
+  level3x1,
+  level4x1,
+  level5x1,
+].map(parseLevel);
 
 // Narrows the JSON's strings to the game's kinds; an unknown kind is a broken file.
 export function parseLevel(raw: RawLevel): LevelDef {

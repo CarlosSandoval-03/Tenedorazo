@@ -6,7 +6,7 @@
     "y": -96
   },
   "ingredients": ["cheese", "cheese", "chili"],
-  "stars": [5500, 7500],
+  "stars": [4800, 6900],
   "ground": [
     {
       "x": 480,
@@ -69,11 +69,6 @@
     {
       "kind": "roach",
       "x": 672,
-      "y": -16
-    },
-    {
-      "kind": "roach",
-      "x": 768,
       "y": -16
     },
     {
