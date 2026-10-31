@@ -1,5 +1,5 @@
 import type p5 from "p5";
-import { MATERIALS, PALETTE } from "../config";
+import { COUNTER, PALETTE } from "../config";
 import type { Vec } from "../core/math";
 import type { World } from "../physics/World";
 import { Entity } from "./Entity";
@@ -23,7 +23,7 @@ export class Ground extends Entity {
       isStatic: true,
       shape: { type: "box", width: spec.width, height: spec.height },
       position: spec.center,
-      material: MATERIALS.counter,
+      material: COUNTER,
     });
   }
 

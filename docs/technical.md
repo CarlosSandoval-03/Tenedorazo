@@ -40,7 +40,7 @@ fork-and-fling/
     ├── state.ts          # saved progress
     ├── types.ts          # shared types, LevelDef
     ├── i18n/             # en.ts, es.ts, index.ts (detection, t())
-    ├── core/             # Scene, SceneManager, Input, display, drawing, math, random (theme-agnostic)
+    ├── core/             # Scene, SceneManager, Input, display, drawing, math, random, storage (theme-agnostic)
     ├── physics/          # World, BodyHandle, damage, blast; the only folder that imports Matter.js
     ├── entities/         # Entity, Destructible, Block (+ looks), Ground, Roach, Ingredient (+ kinds), Launcher
     ├── systems/          # Shot, Scoring, Blasts, Debris

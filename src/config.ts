@@ -1,4 +1,5 @@
 import type { PhysicalMaterial, ShapeDef } from "./physics/World";
+import type { IngredientKind, MaterialKind, RoachKind } from "./types";
 
 export const CANVAS_WIDTH = 960;
 export const CANVAS_HEIGHT = 540;
@@ -24,24 +25,85 @@ export const FLOOR_SCREEN_Y = CANVAS_HEIGHT - 64;
 
 export const BLOCK_UNIT = 16;
 
-export type SurfaceKind = "glass" | "wood" | "castIron" | "counter";
+export interface MaterialSpec extends PhysicalMaterial {
+  readonly hp: number;
+  // How much of an impact's damage this side takes.
+  readonly fragility: number;
+}
 
-export const MATERIALS: Readonly<Record<SurfaceKind, PhysicalMaterial>> = {
-  glass: { density: 0.0008, friction: 0.4, restitution: 0.1 },
-  wood: { density: 0.0012, friction: 0.7, restitution: 0.05 },
-  castIron: { density: 0.004, friction: 0.8, restitution: 0.02 },
-  counter: { density: 0, friction: 0.9, restitution: 0 },
+export const MATERIALS: Readonly<Record<MaterialKind, MaterialSpec>> = {
+  glass: {
+    density: 0.0008,
+    friction: 0.4,
+    restitution: 0.1,
+    hp: 10,
+    fragility: 1.5,
+  },
+  wood: {
+    density: 0.0012,
+    friction: 0.7,
+    restitution: 0.05,
+    hp: 80,
+    fragility: 1,
+  },
+  castIron: {
+    density: 0.004,
+    friction: 0.8,
+    restitution: 0.02,
+    hp: 200,
+    fragility: 0.5,
+  },
 };
+
+// The static counter stone under every level.
+export const COUNTER: PhysicalMaterial = {
+  density: 0,
+  friction: 0.9,
+  restitution: 0,
+};
+
+export interface RoachSpec extends PhysicalMaterial {
+  readonly hp: number;
+  readonly fragility: number;
+  readonly radius: number;
+}
+
+const ROACH_BODY = { density: 0.001, friction: 0.8, restitution: 0.25 };
+const ROACH_HP = 20;
+
+export const ROACHES: Readonly<Record<RoachKind, RoachSpec>> = {
+  roach: { ...ROACH_BODY, hp: ROACH_HP, fragility: 1, radius: 16 },
+  capped: { ...ROACH_BODY, hp: ROACH_HP * 2, fragility: 1, radius: 16 },
+  colander: { ...ROACH_BODY, hp: ROACH_HP * 4, fragility: 1, radius: 16 },
+  queen: { ...ROACH_BODY, hp: ROACH_HP * 10, fragility: 1, radius: 32 },
+};
+
+// Damage = max(0, impact − DAMAGE_THRESHOLD) × DAMAGE_SCALE × fragility; resting contact stays below.
+export const DAMAGE_THRESHOLD = 60;
+export const DAMAGE_SCALE = 0.1;
+// Below these hp fractions a block shows cracked, then broken.
+export const DAMAGE_STATES = { cracked: 0.66, broken: 0.33 } as const;
+export const HIT_FLASH_FRAMES = 6;
+// No damage while a fresh fort settles by a fraction of a pixel.
+export const LEVEL_START_GRACE = 30;
+
+// Screen shake: px per unit of the tick's largest impact, capped, decaying each tick.
+export const SHAKE_SCALE = 0.004;
+export const SHAKE_MAX = 8;
+export const SHAKE_DECAY = 0.85;
+
+// The last roach going slows time to FINAL_SLOWMO for FINAL_SLOWMO_FRAMES ticks.
+export const FINAL_SLOWMO = 0.3;
+export const FINAL_SLOWMO_FRAMES = 45;
+
+// Visual-only debris: how many pieces a break throws, and how long they last.
+export const DEBRIS_PIECES = 10;
+export const DEBRIS_FRAMES = 50;
+export const DEBRIS_SPEED = 260;
+export const DEBRIS_SEED = 20261030;
 
 // Nothing smaller is ever created: a pea.
 export const MIN_BODY_SIZE = 12;
-
-export type IngredientKind =
-  | "meatball"
-  | "peaPod"
-  | "chili"
-  | "cheese"
-  | "popcorn";
 
 export interface IngredientSpec extends PhysicalMaterial {
   readonly shape: ShapeDef;
@@ -112,6 +174,9 @@ export const PALETTE = {
   glass: { fill: "#bfe9f0", shine: "#ffffff" },
   wood: { fill: "#c98b45", grain: "#8a5a2b" },
   castIron: { fill: "#2b2d31", rim: "#7d8790" },
+  roach: { shell: "#6a3fb5", highlight: "#b79cf0", eyes: "#ffd84a" },
+  crack: "#0e1417",
+  flash: "#ffffff",
   fork: { metal: "#c4ccd2", shade: "#8b969e", band: "#c8423c" },
   ingredients: {
     outline: "#fff1cc",
@@ -128,6 +193,7 @@ export const PALETTE = {
 export const KEYS = {
   pointer: ["Pointer"],
   ability: ["Space"],
+  restart: ["KeyR"],
 } as const;
 
 export type Action = keyof typeof KEYS;

@@ -38,7 +38,7 @@ flowchart TD
 
 | Thing | Body | Shape | Notes |
 | ----- | ---- | ----- | ----- |
-| Floor | Static | Box | Friction from `MATERIALS.counter`. |
+| Floor | Static | Box | Friction from `COUNTER`. |
 | Blocks | Dynamic | Box, circle | Density, friction, restitution from `MATERIALS`. |
 | Roaches | Dynamic | Circle | Slightly bouncy; hp from the roach kind. |
 | Ingredient in the band | **No body** | — | Drawn by the launcher; the body is created on release. |

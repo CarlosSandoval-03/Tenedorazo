@@ -1,44 +1,45 @@
 import type p5 from "p5";
-import { MATERIALS, type SurfaceKind } from "../config";
+import { MATERIALS } from "../config";
 import { drawInPose } from "../core/drawing";
 import type { Vec } from "../core/math";
-import type { BodyHandle, ShapeDef, World } from "../physics/World";
-import { drawBlockLook } from "./blockLooks";
-import { Entity } from "./Entity";
+import type { ShapeDef, World } from "../physics/World";
+import type { MaterialKind } from "../types";
+import { drawBlockLook, drawDamage, drawFlash } from "./blockLooks";
+import { Destructible } from "./Destructible";
 
 export interface BlockSpec {
-  material: Exclude<SurfaceKind, "counter">;
+  material: MaterialKind;
   shape: ShapeDef;
   position: Vec;
   angle?: number;
 }
 
-export class Block extends Entity {
-  readonly body: BodyHandle;
-  readonly material: BlockSpec["material"];
+export class Block extends Destructible {
+  readonly material: MaterialKind;
   readonly shape: ShapeDef;
   private readonly world: World;
 
   constructor(world: World, spec: BlockSpec) {
-    super();
-    this.world = world;
-    this.material = spec.material;
-    this.shape = spec.shape;
-    this.body = world.createBody({
+    const material = MATERIALS[spec.material];
+    const body = world.createBody({
       isStatic: false,
       shape: spec.shape,
       position: spec.position,
       angle: spec.angle,
-      material: MATERIALS[spec.material],
+      material,
     });
+    super(body, material);
+    this.world = world;
+    this.material = spec.material;
+    this.shape = spec.shape;
   }
 
   draw(p: p5): void {
-    drawInPose(
-      p,
-      this.world.position(this.body),
-      this.world.angle(this.body),
-      () => drawBlockLook(p, this.material, this.shape),
-    );
+    const position = this.world.position(this.body);
+    drawInPose(p, position, this.world.angle(this.body), () => {
+      drawBlockLook(p, this.material, this.shape);
+      drawDamage(p, this.shape, this.damageState());
+      if (this.isFlashing) drawFlash(p, this.shape);
+    });
   }
 }

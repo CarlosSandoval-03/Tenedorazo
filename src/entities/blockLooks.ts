@@ -1,19 +1,50 @@
 import type p5 from "p5";
-import { PALETTE, type SurfaceKind } from "../config";
+import { PALETTE } from "../config";
 import type { ShapeDef } from "../physics/World";
+import type { MaterialKind } from "../types";
+import { DAMAGE_STATE, type DamageState } from "./Destructible";
 
 const OUTLINE_WEIGHT = 3;
 const CORNER_RADIUS = 3;
 const GLASS_ALPHA = 170;
 const GRAIN_SPACING = 6;
 const RIM_INSET = 4;
+const CRACK_WEIGHT = 2;
+const FLASH_ALPHA = 200;
 
-type BlockMaterial = Exclude<SurfaceKind, "counter">;
+// Crack polylines as fractions of the block's half size, so they fit any shape.
+const CRACKS: Record<DamageState, readonly (readonly [number, number])[][]> = {
+  intact: [],
+  cracked: [
+    [
+      [-0.2, -1],
+      [0.1, -0.4],
+      [-0.1, 0.1],
+    ],
+  ],
+  broken: [
+    [
+      [-0.2, -1],
+      [0.1, -0.4],
+      [-0.1, 0.1],
+      [0.3, 0.7],
+    ],
+    [
+      [1, -0.3],
+      [0.4, 0],
+      [0.5, 0.5],
+    ],
+    [
+      [-1, 0.4],
+      [-0.4, 0.2],
+    ],
+  ],
+};
 
 // How each material reads at a glance, centered on the origin of the body's frame.
 export function drawBlockLook(
   p: p5,
-  material: BlockMaterial,
+  material: MaterialKind,
   shape: ShapeDef,
 ): void {
   p.rectMode(p.CENTER);
@@ -22,7 +53,29 @@ export function drawBlockLook(
   LOOKS[material](p, shape);
 }
 
-const LOOKS: Record<BlockMaterial, (p: p5, shape: ShapeDef) => void> = {
+// Cracks first appear and then spread as the hp drops.
+export function drawDamage(p: p5, shape: ShapeDef, state: DamageState): void {
+  if (state === DAMAGE_STATE.intact) return;
+  const { width, height } = boundsOf(shape);
+  p.noFill();
+  p.stroke(PALETTE.crack);
+  p.strokeWeight(CRACK_WEIGHT);
+  for (const crack of CRACKS[state]) {
+    p.beginShape();
+    for (const [x, y] of crack) p.vertex((x * width) / 2, (y * height) / 2);
+    p.endShape();
+  }
+}
+
+export function drawFlash(p: p5, shape: ShapeDef): void {
+  const flash = p.color(PALETTE.flash);
+  flash.setAlpha(FLASH_ALPHA);
+  p.noStroke();
+  p.fill(flash);
+  drawSilhouette(p, shape);
+}
+
+const LOOKS: Record<MaterialKind, (p: p5, shape: ShapeDef) => void> = {
   glass: drawGlass,
   wood: drawWood,
   castIron: drawCastIron,

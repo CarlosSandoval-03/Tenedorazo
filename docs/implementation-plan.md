@@ -68,7 +68,7 @@ Every step ends with something playable and a version bump ([technical.md › Gi
 | `physics/World.ts` (+ test) | The Matter wrapper (below). |
 | `entities/Entity.ts`, `entities/Block.ts` | `Block` holds a `BodyHandle` and its material, and draws itself from the body's pose. |
 | `scenes/GameScene.ts` | Builds the floor and a hard-coded test fort; steps the world; draws. |
-| `config.ts` | `MATERIALS` (density, friction, restitution for glass, wood, cast iron, and the counter), `PALETTE`, `FLOOR_SCREEN_Y`, solver iterations, `MAX_STEPS_PER_FRAME`, `SETTLE_SPEED`, `SETTLE_SPIN`. |
+| `config.ts` | `MATERIALS` (density, friction, restitution for glass, wood, and cast iron), `COUNTER` (the static ground), `PALETTE`, `FLOOR_SCREEN_Y`, solver iterations, `MAX_STEPS_PER_FRAME`, `SETTLE_SPEED`, `SETTLE_SPIN`. |
 | `debug/` | `?debug=true` only: `1` toggles body outlines, still bodies dimmed; `8` + click pushes the body under the pointer. |
 
 ### Specification

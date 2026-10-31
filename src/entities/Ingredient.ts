@@ -1,14 +1,10 @@
 import type p5 from "p5";
-import {
-  INGREDIENTS,
-  LANDED_FRICTION_AIR,
-  PALETTE,
-  type IngredientKind,
-} from "../config";
+import { INGREDIENTS, LANDED_FRICTION_AIR, PALETTE } from "../config";
 import { drawInPose } from "../core/drawing";
 import type { Vec } from "../core/math";
 import type { BodyDef, BodyHandle, World } from "../physics/World";
 import { drawSilhouette } from "./blockLooks";
+import type { IngredientKind } from "../types";
 import { Entity } from "./Entity";
 
 const OUTLINE_WEIGHT = 3;
@@ -60,12 +56,15 @@ export class Ingredient extends Entity {
 
   // Also used by the launcher, while the ingredient sits in the band without a body.
   drawAt(p: p5, position: Vec, angle: number): void {
-    drawInPose(p, position, angle, () => {
-      p.rectMode(p.CENTER);
-      p.stroke(PALETTE.ingredients.outline);
-      p.strokeWeight(OUTLINE_WEIGHT);
-      p.fill(PALETTE.ingredients[this.kind]);
-      drawSilhouette(p, INGREDIENTS[this.kind].shape);
-    });
+    drawInPose(p, position, angle, () => drawIngredientLook(p, this.kind));
   }
+}
+
+// Centered on the origin; the HUD draws its icons with it too.
+export function drawIngredientLook(p: p5, kind: IngredientKind): void {
+  p.rectMode(p.CENTER);
+  p.stroke(PALETTE.ingredients.outline);
+  p.strokeWeight(OUTLINE_WEIGHT);
+  p.fill(PALETTE.ingredients[kind]);
+  drawSilhouette(p, INGREDIENTS[kind].shape);
 }
