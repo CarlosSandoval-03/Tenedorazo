@@ -4,10 +4,13 @@ import { CANVAS_HEIGHT, CANVAS_WIDTH, KEYS } from "./config";
 import { fitCanvas } from "./core/display";
 import { Input } from "./core/Input";
 import { SceneManager } from "./core/SceneManager";
+import { initLanguage } from "./i18n";
 import { GameScene } from "./scenes/GameScene";
 
 // The checks cost time every frame, and minified names trip false warnings.
 p5.disableFriendlyErrors = import.meta.env.PROD;
+
+initLanguage(location.search);
 
 const frame = document.getElementById("game");
 if (!frame) throw new Error("#game is missing from the DOM");
