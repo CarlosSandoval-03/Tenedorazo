@@ -52,6 +52,7 @@ Apply these to every change, and to code you touch for another reason. Be critic
 - **One home per piece of logic.** Shared math (angles, vectors, clamps, easing, trajectory prediction) lives in `core/math.ts`; shared entity mechanics (hp, damage from impacts) live in a base class. Never copy a formula into a second file: extract it.
 - **Names say what, not how.** Functions are verbs (`launchIngredient`, `drawAimPreview`), values are nouns, booleans read as predicates (`isStill`, `isOffscreen`). No abbreviations beyond the standard ones (`x`, `y`, `p`, `i`, `dx`).
 - **At most four parameters.** Past that, pass an object.
+- **One owner per piece of state.** Only the class or module a piece of state belongs to changes it, through its own methods; everyone else reads it through a getter. No shared mutable fields, no global written by several systems (docs/technical.md › Code conventions).
 - **State in `update`, pixels in `draw`.** `draw` never changes game or physics state, and game logic never draws, so the logic stays testable without p5.
 - **Pure when possible.** Logic that can be a pure function (trajectory, damage from impulse, star rating, level validation) is one, and has a test.
 - **No magic numbers.** Tunables go in `config.ts`; layout and drawing constants are named at the top of their module.

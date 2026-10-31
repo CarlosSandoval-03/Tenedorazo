@@ -22,12 +22,17 @@ export interface LoadedIngredient {
 // The fork slingshot: a handle down to the counter, two prongs, and the rubber band between them.
 export class Launcher extends Entity {
   readonly rest: Vec;
-  // Set by the scene every tick; null while nothing sits in the band.
-  loaded: LoadedIngredient | null = null;
+  // Null while nothing sits in the band.
+  private loaded: LoadedIngredient | null = null;
 
   constructor(rest: Vec) {
     super();
     this.rest = rest;
+  }
+
+  // The scene, which owns the queue, says each tick what sits in the band and where.
+  hold(loaded: LoadedIngredient | null): void {
+    this.loaded = loaded;
   }
 
   // The band's back half goes behind the ingredient and its front half over it.

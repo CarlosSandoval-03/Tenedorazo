@@ -21,9 +21,9 @@ describe("Destructible", () => {
     expect(block.damageState()).toBe(DAMAGE_STATE.cracked);
     block.damage(30);
     expect(block.damageState()).toBe(DAMAGE_STATE.broken);
-    expect(block.alive).toBe(true);
+    expect(block.isAlive).toBe(true);
     block.damage(20);
-    expect(block.alive).toBe(false);
+    expect(block.isAlive).toBe(false);
   });
 
   it("flashes for a few ticks on a hit, and not on zero damage", () => {
@@ -44,7 +44,7 @@ describe("Destructible", () => {
 
     jelly.damage(1e9);
 
-    expect(jelly.alive).toBe(true);
+    expect(jelly.isAlive).toBe(true);
     expect(jelly.damageState()).toBe(DAMAGE_STATE.intact);
     expect(jelly.isFlashing).toBe(true);
   });

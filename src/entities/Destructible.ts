@@ -22,17 +22,25 @@ export abstract class Destructible extends Entity {
   readonly maxHp: number;
   readonly fragility: number;
   readonly score: number;
-  hp: number;
+  #hp: number;
   // Ticks since the last hit that did damage; drives the flash and the jelly's wobble.
-  ticksSinceHit = Infinity;
+  #ticksSinceHit = Infinity;
 
   constructor(body: BodyHandle, toughness: Toughness) {
     super();
     this.body = body;
     this.maxHp = toughness.hp;
-    this.hp = toughness.hp;
+    this.#hp = toughness.hp;
     this.fragility = toughness.fragility;
     this.score = toughness.score;
+  }
+
+  get hp(): number {
+    return this.#hp;
+  }
+
+  get ticksSinceHit(): number {
+    return this.#ticksSinceHit;
   }
 
   get isFlashing(): boolean {
@@ -46,9 +54,9 @@ export abstract class Destructible extends Entity {
 
   damage(amount: number): void {
     if (amount <= 0) return;
-    this.hp -= amount;
-    this.ticksSinceHit = 0;
-    if (this.hp <= 0) this.alive = false;
+    this.#hp -= amount;
+    this.#ticksSinceHit = 0;
+    if (this.#hp <= 0) this.destroy();
   }
 
   damageState(): DamageState {
@@ -60,6 +68,6 @@ export abstract class Destructible extends Entity {
   }
 
   update(): void {
-    this.ticksSinceHit++;
+    this.#ticksSinceHit++;
   }
 }

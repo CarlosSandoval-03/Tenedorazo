@@ -6,7 +6,7 @@ import type { Scene } from "./Scene";
 // whole tick stored runs one update(). The step never depends on the frame rate.
 export class SceneManager {
   // 1 is normal time, 0 pauses the ticks; the scene's own slow motion multiplies it.
-  speed = 1;
+  private speed = 1;
   private scene: Scene | null = null;
   private accumulator = 0;
   private readonly endTick: () => void;
@@ -18,6 +18,10 @@ export class SceneManager {
 
   get current(): Scene | null {
     return this.scene;
+  }
+
+  setSpeed(speed: number): void {
+    this.speed = speed;
   }
 
   change(next: Scene): void {

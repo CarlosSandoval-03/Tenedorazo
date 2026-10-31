@@ -65,16 +65,16 @@ export type Outcome = (typeof OUTCOME)[keyof typeof OUTCOME];
 
 export class GameScene implements Scene {
   readonly level: LevelDef;
-  world = new World();
-  blocks: Block[] = [];
-  roaches: Roach[] = [];
-  shot: Shot;
-  outcome: Outcome = OUTCOME.playing;
+  #world = new World();
+  #blocks: Block[] = [];
+  #roaches: Roach[] = [];
+  #shot: Shot;
+  #outcome: Outcome = OUTCOME.playing;
   // Scored so far, by part; the bonus for ingredients left comes only with a win.
   private scored: Record<ScorePart, number> = { roaches: 0, fort: 0 };
-  queue: IngredientKind[] = [];
+  #queue: IngredientKind[] = [];
   // The last tick's impacts, kept for the shake and the debug view.
-  lastImpacts: readonly Impact[] = [];
+  #lastImpacts: readonly Impact[] = [];
   // The ingredient in the band, then in flight until its shot settles.
   private loaded: Ingredient | null = null;
   private flying: Ingredient[] = [];
@@ -102,8 +102,37 @@ export class GameScene implements Scene {
   constructor(context: GameContext, level: LevelDef) {
     this.context = context;
     this.level = level;
-    this.shot = new Shot(this.world, level.launcher);
+    this.#shot = new Shot(this.#world, level.launcher);
     this.launcher = new Launcher(level.launcher);
+  }
+
+  // Read-only views for the debug tools; only the scene changes them.
+  get world(): World {
+    return this.#world;
+  }
+
+  get blocks(): readonly Block[] {
+    return this.#blocks;
+  }
+
+  get roaches(): readonly Roach[] {
+    return this.#roaches;
+  }
+
+  get shot(): Shot {
+    return this.#shot;
+  }
+
+  get outcome(): Outcome {
+    return this.#outcome;
+  }
+
+  get queue(): readonly IngredientKind[] {
+    return this.#queue;
+  }
+
+  get lastImpacts(): readonly Impact[] {
+    return this.#lastImpacts;
   }
 
   get score(): number {
@@ -118,6 +147,11 @@ export class GameScene implements Scene {
     this.start();
   }
 
+  // Ingredients join the end of the queue (the debug sandbox's infinite ingredients).
+  addToQueue(kinds: readonly IngredientKind[]): void {
+    this.#queue.push(...kinds);
+  }
+
   // One tick, in order: pause and restart, input and the shot, the step, what the step did, then
   // the level's end.
   update(): void {
@@ -126,12 +160,12 @@ export class GameScene implements Scene {
       this.start();
       return;
     }
-    if (this.outcome === OUTCOME.playing)
-      this.handleShotEvent(this.shot.update(this.shotInput()));
+    if (this.#outcome === OUTCOME.playing)
+      this.handleShotEvent(this.#shot.update(this.shotInput()));
 
-    this.world.step();
+    this.#world.step();
     this.ticks++;
-    this.applyImpacts(this.world.takeImpacts());
+    this.applyImpacts(this.#world.takeImpacts());
     this.runBlasts();
     this.removeOutOfBounds();
     this.removeDestroyed();
@@ -149,8 +183,8 @@ export class GameScene implements Scene {
     p.push();
     p.translate(this.shakeOffset.x, FLOOR_SCREEN_Y + this.shakeOffset.y);
     for (const ground of this.ground) ground.draw(p);
-    for (const block of this.blocks) block.draw(p);
-    for (const roach of this.roaches) roach.draw(p);
+    for (const block of this.#blocks) block.draw(p);
+    for (const roach of this.#roaches) roach.draw(p);
     drawAimPreview(p, this.preview);
     this.launcher.draw(p);
     for (const ingredient of this.flying) ingredient.draw(p);
@@ -173,15 +207,15 @@ export class GameScene implements Scene {
 
   // Throws the old world away and builds the level again from scratch.
   private start(): void {
-    this.world = new World();
-    const built = buildLevel(this.world, this.level);
+    this.#world = new World();
+    const built = buildLevel(this.#world, this.level);
     this.ground = built.ground;
-    this.blocks = built.blocks;
-    this.roaches = built.roaches;
+    this.#blocks = built.blocks;
+    this.#roaches = built.roaches;
     this.destructibles = built.destructibles;
     this.launcher = new Launcher(this.level.launcher);
-    this.shot = new Shot(this.world, this.level.launcher);
-    this.queue = [...this.level.ingredients];
+    this.#shot = new Shot(this.#world, this.level.launcher);
+    this.#queue = [...this.level.ingredients];
     this.flying = [];
     this.debris = new Debris(DEBRIS_SEED);
     this.blasts = new Blasts();
@@ -191,7 +225,7 @@ export class GameScene implements Scene {
     this.slowmoFrames = 0;
     this.hintFor = null;
     this.wasHintShown = false;
-    this.outcome = OUTCOME.playing;
+    this.#outcome = OUTCOME.playing;
     this.scored = { roaches: 0, fort: 0 };
     this.floatingNumbers = new FloatingNumbers();
     this.pauseMenu = null;
@@ -243,7 +277,7 @@ export class GameScene implements Scene {
       spawn: (projectile) => this.flying.push(projectile),
       blast: (blast) => this.blasts.request(blast),
     });
-    this.flying = this.flying.filter((ingredient) => ingredient.alive);
+    this.flying = this.flying.filter((ingredient) => ingredient.isAlive);
   }
 
   private launch(pull: Vec, velocity: Vec): void {
@@ -259,21 +293,21 @@ export class GameScene implements Scene {
   private endShot(): void {
     for (const ingredient of this.flying) this.removeIngredient(ingredient);
     this.flying = [];
-    if (this.roaches.length === 0) return;
+    if (this.#roaches.length === 0) return;
     if (!this.loadNext()) this.end(OUTCOME.lost);
   }
 
   private end(outcome: Outcome): void {
-    this.outcome = outcome;
+    this.#outcome = outcome;
     this.resultDelay = RESULT_DELAY_FRAMES;
   }
 
   private loadNext(): boolean {
-    const kind = this.queue.shift();
+    const kind = this.#queue.shift();
     this.hintFor = null;
     if (!kind) return false;
-    this.loaded = new Ingredient(this.world, kind);
-    this.shot.load();
+    this.loaded = new Ingredient(this.#world, kind);
+    this.#shot.load();
     this.showHintFor(kind);
     return true;
   }
@@ -289,14 +323,14 @@ export class GameScene implements Scene {
   private removeIngredient(ingredient: Ingredient): void {
     if (ingredient.body)
       this.debris.burst(
-        this.world.position(ingredient.body),
+        this.#world.position(ingredient.body),
         DEBRIS_LOOKS.puff,
       );
     ingredient.remove();
   }
 
   private applyImpacts(impacts: readonly Impact[]): void {
-    this.lastImpacts = impacts;
+    this.#lastImpacts = impacts;
     for (const impact of impacts) this.endFlightOnHit(impact);
     if (this.ticks > LEVEL_START_GRACE)
       applyImpactDamage(impacts, this.destructibles);
@@ -310,7 +344,7 @@ export class GameScene implements Scene {
       if (impact.a !== ingredient.body && impact.b !== ingredient.body)
         continue;
       ingredient.land();
-      this.shot.hit();
+      this.#shot.hit();
     }
   }
 
@@ -322,16 +356,16 @@ export class GameScene implements Scene {
   // Off the level counts as gone: a roach that falls off is as good as squashed.
   private removeOutOfBounds(): void {
     for (const target of this.destructibles.values())
-      if (this.isOutOfBounds(this.world.position(target.body)))
-        target.alive = false;
+      if (this.isOutOfBounds(this.#world.position(target.body)))
+        target.destroy();
 
     for (const ingredient of this.flying) {
       if (!ingredient.body) continue;
-      if (!this.isOutOfBounds(this.world.position(ingredient.body))) continue;
+      if (!this.isOutOfBounds(this.#world.position(ingredient.body))) continue;
       ingredient.remove();
-      this.shot.hit();
+      this.#shot.hit();
     }
-    this.flying = this.flying.filter((ingredient) => ingredient.alive);
+    this.flying = this.flying.filter((ingredient) => ingredient.isAlive);
   }
 
   private isOutOfBounds(position: Vec): boolean {
@@ -345,18 +379,18 @@ export class GameScene implements Scene {
   // Bodies at 0 hp leave the world only now, after the step, never inside it.
   // A destroyed pressure cooker queues its blast for the next tick.
   private removeDestroyed(): void {
-    const hadRoaches = this.roaches.length > 0;
-    this.blocks = this.prune(this.blocks, "fort", (block) => {
+    const hadRoaches = this.#roaches.length > 0;
+    this.#blocks = this.prune(this.#blocks, "fort", (block) => {
       const blast = block.blastOnDestroy();
       if (blast) this.blasts.request(blast);
       return DEBRIS_LOOKS[block.material];
     });
-    this.roaches = this.prune(
-      this.roaches,
+    this.#roaches = this.prune(
+      this.#roaches,
       "roaches",
       () => DEBRIS_LOOKS.roach,
     );
-    if (hadRoaches && this.roaches.length === 0)
+    if (hadRoaches && this.#roaches.length === 0)
       this.slowmoFrames = FINAL_SLOWMO_FRAMES;
   }
 
@@ -368,14 +402,14 @@ export class GameScene implements Scene {
     onDestroyed: (target: T) => DebrisLook,
   ): T[] {
     for (const target of targets) {
-      if (target.alive) continue;
-      const position = this.world.position(target.body);
+      if (target.isAlive) continue;
+      const position = this.#world.position(target.body);
       this.debris.burst(position, onDestroyed(target));
       this.addScore(part, target.score, position);
-      this.world.remove(target.body);
+      this.#world.remove(target.body);
       this.destructibles.delete(target.body);
     }
-    return targets.filter((target) => target.alive);
+    return targets.filter((target) => target.isAlive);
   }
 
   private addScore(part: ScorePart, points: number, at: Vec): void {
@@ -385,7 +419,7 @@ export class GameScene implements Scene {
   }
 
   private runBlasts(): void {
-    for (const blast of this.blasts.run(this.world, this.destructibles)) {
+    for (const blast of this.blasts.run(this.#world, this.destructibles)) {
       this.debris.burst(blast.at, DEBRIS_LOOKS.blast);
       this.addShake(blast.strength);
     }
@@ -406,14 +440,14 @@ export class GameScene implements Scene {
 
   // The level is won once the roaches are gone and the shot that got them has settled.
   private checkWin(): void {
-    if (this.outcome !== OUTCOME.playing || this.roaches.length > 0) return;
+    if (this.#outcome !== OUTCOME.playing || this.#roaches.length > 0) return;
     const isShotOut =
-      this.shot.state === SHOT.flying || this.shot.state === SHOT.settling;
+      this.#shot.state === SHOT.flying || this.#shot.state === SHOT.settling;
     if (!isShotOut) this.end(OUTCOME.won);
   }
 
   private countDownToResult(): void {
-    if (this.outcome === OUTCOME.playing) return;
+    if (this.#outcome === OUTCOME.playing) return;
     this.resultDelay--;
     if (this.resultDelay <= 0) this.showResult();
   }
@@ -421,7 +455,7 @@ export class GameScene implements Scene {
   // A won level pays for the ingredients left, and saves its best score and hats.
   private showResult(): void {
     const { progress, scenes } = this.context;
-    const isWon = this.outcome === OUTCOME.won;
+    const isWon = this.#outcome === OUTCOME.won;
     const breakdown = {
       ...this.scored,
       ingredientsLeft: isWon ? this.ingredientsLeft().length : 0,
@@ -444,17 +478,19 @@ export class GameScene implements Scene {
   }
 
   private updateLauncher(): void {
-    this.launcher.loaded = this.loaded
-      ? { ingredient: this.loaded, position: this.bandPosition() }
-      : null;
+    this.launcher.hold(
+      this.loaded
+        ? { ingredient: this.loaded, position: this.bandPosition() }
+        : null,
+    );
   }
 
   // Along the hop while loading, then wherever the pull holds it.
   private bandPosition(): Vec {
-    if (this.shot.state !== SHOT.loading)
-      return sub(this.level.launcher, this.shot.pull);
+    if (this.#shot.state !== SHOT.loading)
+      return sub(this.level.launcher, this.#shot.pull);
 
-    const t = this.shot.loadProgress;
+    const t = this.#shot.loadProgress;
     const start = {
       x: this.level.launcher.x - HOP_START_OFFSET,
       y: -this.loadedRadius(),
@@ -476,21 +512,21 @@ export class GameScene implements Scene {
   private updatePreview(): void {
     const ingredient = this.loaded;
     const isAiming =
-      this.shot.state === SHOT.aiming && length(this.shot.pull) >= MIN_PULL;
+      this.#shot.state === SHOT.aiming && length(this.#shot.pull) >= MIN_PULL;
     if (!ingredient || !isAiming) {
       this.preview = [];
       return;
     }
-    this.preview = this.world.predictFlight(
+    this.preview = this.#world.predictFlight(
       ingredient.bodyDef(
-        sub(this.level.launcher, this.shot.pull),
-        this.shot.aimVelocity,
+        sub(this.level.launcher, this.#shot.pull),
+        this.#shot.aimVelocity,
       ),
       PREVIEW_DOTS * PREVIEW_DOT_SPACING,
     );
   }
 
   private ingredientsLeft(): ProjectileKind[] {
-    return this.loaded ? [this.loaded.kind, ...this.queue] : [...this.queue];
+    return this.loaded ? [this.loaded.kind, ...this.#queue] : [...this.#queue];
   }
 }

@@ -48,9 +48,9 @@ export interface StillnessProbe {
 // One shot, from the hop into the band to the world settling. It decides when things happen;
 // the scene does them, so the shot never sees the engine or p5.
 export class Shot {
-  state: ShotState = SHOT.spent;
+  #state: ShotState = SHOT.spent;
   // From the dragged ingredient back to the band's rest, in px.
-  pull: Vec = ZERO;
+  #pull: Vec = ZERO;
   private isGrabbed = false;
   // Ticks spent in the current phase: the hop while loading, the time since launch after it.
   private frames = 0;
@@ -63,24 +63,32 @@ export class Shot {
     this.rest = rest;
   }
 
+  get state(): ShotState {
+    return this.#state;
+  }
+
+  get pull(): Vec {
+    return this.#pull;
+  }
+
   // 0 to 1 through the hop into the band.
   get loadProgress(): number {
-    return this.state === SHOT.loading ? this.frames / LOAD_FRAMES : 1;
+    return this.#state === SHOT.loading ? this.frames / LOAD_FRAMES : 1;
   }
 
   // The velocity a release would launch with right now.
   get aimVelocity(): Vec {
-    return launchVelocity(this.pull, LAUNCH_SPEED);
+    return launchVelocity(this.#pull, LAUNCH_SPEED);
   }
 
   load(): void {
-    this.state = SHOT.loading;
+    this.#state = SHOT.loading;
     this.frames = 0;
-    this.pull = ZERO;
+    this.#pull = ZERO;
   }
 
   update(input: ShotInput): ShotEvent | undefined {
-    switch (this.state) {
+    switch (this.#state) {
       case SHOT.loading:
         return this.updateLoading();
       case SHOT.aiming:
@@ -96,12 +104,12 @@ export class Shot {
 
   // The ingredient hit something or left the level: its ability is gone.
   hit(): void {
-    if (this.state === SHOT.flying) this.state = SHOT.settling;
+    if (this.#state === SHOT.flying) this.#state = SHOT.settling;
   }
 
   private updateLoading(): undefined {
     this.frames++;
-    if (this.frames >= LOAD_FRAMES) this.state = SHOT.aiming;
+    if (this.frames >= LOAD_FRAMES) this.#state = SHOT.aiming;
     return undefined;
   }
 
@@ -113,20 +121,20 @@ export class Shot {
       this.isGrabbed = true;
     if (!this.isGrabbed) return undefined;
 
-    this.pull = clampLength(sub(this.rest, input.pointer), MAX_PULL);
+    this.#pull = clampLength(sub(this.rest, input.pointer), MAX_PULL);
     if (!input.wasPointerReleased) return undefined;
     return this.release();
   }
 
   private release(): ShotEvent | undefined {
     this.isGrabbed = false;
-    const pull = this.pull;
+    const pull = this.#pull;
     const velocity = this.aimVelocity;
-    this.pull = ZERO;
+    this.#pull = ZERO;
     // A short pull is a change of mind: the ingredient stays in the band.
     if (length(pull) < MIN_PULL) return undefined;
 
-    this.state = SHOT.flying;
+    this.#state = SHOT.flying;
     this.frames = 0;
     this.stillFrames = 0;
     return { type: "launch", pull, velocity };
@@ -135,7 +143,7 @@ export class Shot {
   private updateFlying(input: ShotInput): ShotEvent | undefined {
     this.frames++;
     if (!input.wasAbilityPressed) return undefined;
-    this.state = SHOT.settling;
+    this.#state = SHOT.settling;
     return { type: "ability" };
   }
 
@@ -144,7 +152,7 @@ export class Shot {
     this.stillFrames = this.world.isStill() ? this.stillFrames + 1 : 0;
     if (this.stillFrames < SETTLE_FRAMES && this.frames < SETTLE_TIMEOUT)
       return undefined;
-    this.state = SHOT.spent;
+    this.#state = SHOT.spent;
     return { type: "settled" };
   }
 }

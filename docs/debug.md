@@ -35,4 +35,4 @@ The panel, bottom left, shows the shot's state, bodies moving / total, the step'
 
 ## How it works
 
-The tools reach the scene through its fields; the game has no debug hooks. They use `World`'s public API, never the engine directly.
+The tools read the scene through its getters and change things only through their owners' public methods (`GameScene.addToQueue`, `Roach.destroy`, `SceneManager.setSpeed`, `World.addVelocity`), never by writing a field. They use `World`'s public API, never the engine directly.

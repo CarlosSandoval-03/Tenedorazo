@@ -19,7 +19,7 @@ interface InputOptions<Action extends string> {
 // Pointer and keys as actions. Presses and releases are remembered until endFrame(), so a tick
 // that runs after the event sees it even when no tick ran in the frame of the event.
 export class Input<Action extends string> {
-  pointer: Vec = ZERO;
+  #pointer: Vec = ZERO;
   private readonly bindings: Bindings<Action>;
   private readonly toLogical: (client: Vec) => Vec;
   private readonly down = new Set<string>();
@@ -30,6 +30,11 @@ export class Input<Action extends string> {
     this.bindings = options.bindings;
     this.toLogical = options.toLogical;
     this.listen(options.canvas, options.window);
+  }
+
+  // Logical canvas px.
+  get pointer(): Vec {
+    return this.#pointer;
   }
 
   isDown(action: Action): boolean {
@@ -66,7 +71,7 @@ export class Input<Action extends string> {
 
   private movePointer(event: Event): void {
     const client = clientPoint(event);
-    if (client) this.pointer = this.toLogical(client);
+    if (client) this.#pointer = this.toLogical(client);
   }
 
   private onKey(event: Event, isDown: boolean): void {

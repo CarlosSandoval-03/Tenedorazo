@@ -34,7 +34,7 @@ describe("Blasts", () => {
       world.step();
       blasts.run(world, targets);
       for (const [i, cooker] of cookers.entries()) {
-        if (cooker.alive || !targets.has(cooker.body)) continue;
+        if (cooker.isAlive || !targets.has(cooker.body)) continue;
         destroyedAt[i] = tick;
         const blast = cooker.blastOnDestroy();
         if (blast) blasts.request(blast);

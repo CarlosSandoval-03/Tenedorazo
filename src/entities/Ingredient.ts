@@ -29,7 +29,7 @@ export interface AbilityEffects {
 // creates one.
 export class Ingredient extends Entity {
   readonly kind: ProjectileKind;
-  body: BodyHandle | null = null;
+  #body: BodyHandle | null = null;
   private readonly world: World;
 
   constructor(world: World, kind: ProjectileKind) {
@@ -38,8 +38,13 @@ export class Ingredient extends Entity {
     this.kind = kind;
   }
 
+  // Null until the launch.
+  get body(): BodyHandle | null {
+    return this.#body;
+  }
+
   launch(position: Vec, velocity: Vec): void {
-    this.body = this.world.createBody(this.bodyDef(position, velocity));
+    this.#body = this.world.createBody(this.bodyDef(position, velocity));
   }
 
   // The body a launch creates; the aim preview flies the same one.
@@ -82,7 +87,7 @@ export class Ingredient extends Entity {
 
   remove(): void {
     if (this.body) this.world.remove(this.body);
-    this.alive = false;
+    this.destroy();
   }
 
   draw(p: p5): void {

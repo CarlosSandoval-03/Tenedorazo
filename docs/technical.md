@@ -55,6 +55,7 @@ fork-and-fling/
 - **Language:** code, comments, identifiers, file names, and commits in English. Player-facing strings only from `src/i18n/`; `es.ts` is typed against `en.ts`.
 - **Formatting:** Prettier defaults: double quotes, semicolons, 2-space indent, trailing commas, 80 columns. `.prettierrc` pins them for every editor, the editor formats on save, and code in docs follows the same style.
 - **Blank lines** split a body into its logical steps: a guard, setup, the work, the result. In tests they separate arrange, act, and assert.
+- **State has one owner:** each piece of state is changed only by the class or module it belongs to, through that owner's methods (`destroy()`, `damage()`, `hold()`, `addToQueue()`, `setSpeed()`, `recordWin()`). Others read it through a getter: a field others read but only its owner writes is a `#field` with a getter of the same name. Shared mutable fields, and globals written from several systems, are not allowed.
 - **Named values:** no TypeScript `enum` (`erasableSyntaxOnly` forbids it); use an `as const` object and derive the type: `const SHOT = { loading: 0, aiming: 1, flying: 2, settling: 3 } as const; type ShotState = (typeof SHOT)[keyof typeof SHOT];`.
 - **Neutral core:** `core/` and `physics/` know nothing about kitchens; themed names (`Roach`, `Ingredient`, `MATERIALS.jelly`) start in `entities/`.
 - **Tests** sit next to their module (`damage.test.ts` beside `damage.ts`). Test pure logic (aim and trajectory, damage, blast falloff, scoring and hats, level validation, the shot's state machine, the camera, `t()`), the level data, and one headless simulation per level ([level-design.md › Validation](level-design.md#validation)). Don't test drawing.
@@ -64,7 +65,7 @@ fork-and-fling/
 - **`main.ts` is minimal:** `setup` and `draw` only create and call the `SceneManager`.
 - **Scenes** implement `enter()`, `update()`, `draw()`, `exit()`. `SceneManager.change(next)` calls `exit()` then `enter()`.
 - **`GameScene`** owns one `World`, the entity lists, and the `Shot`. Restarting a level throws the world away and builds a new one from the `LevelDef`.
-- **Entities** extend `Entity` (`alive`, `update()`, `draw(p)`). Physical ones hold a `BodyHandle` and read their pose from it. `Destructible` owns hp, `damage(amount)`, the damage state, and the hit flash; `Block` and `Roach` extend it. `Ingredient` has a kind and an ability.
+- **Entities** extend `Entity` (`isAlive`, `destroy()`, `update()`, `draw(p)`). Physical ones hold a `BodyHandle` and read their pose from it. `Destructible` owns hp, `damage(amount)`, the damage state, and the hit flash; `Block` and `Roach` extend it. `Ingredient` has a kind and an ability.
 - **Contacts flow one way:** `World` collects impacts during the step; after it, `GameScene` maps each `BodyHandle` to its entity (`Map<BodyHandle, Destructible>`), applies damage, queues blasts, and removes the dead. Nothing changes the world inside a callback.
 - **The `Shot`** is a small state machine ([gameplay.md › The shot](gameplay.md#the-shot)); it knows the world only through a narrow interface (`isStill()`), so it's tested without an engine.
 - **Shared math** (vectors, clamps, easing, the aim trajectory) lives in `core/math.ts`, never copied into an entity.

@@ -46,7 +46,7 @@ export class DebugTools {
     const scene = this.gameScene();
     if (!scene || !this.hasInfiniteIngredients || scene.queue.length > 0)
       return;
-    scene.queue.push(...scene.level.ingredients);
+    scene.addToQueue(scene.level.ingredients);
   }
 
   draw(p: p5): void {
@@ -117,12 +117,12 @@ export class DebugTools {
   }
 
   private applySpeed(): void {
-    if (this.isPaused) this.context.scenes.speed = 0;
-    else this.context.scenes.speed = this.isSlow ? SLOW_SPEED : 1;
+    const speed = this.isSlow ? SLOW_SPEED : 1;
+    this.context.scenes.setSpeed(this.isPaused ? 0 : speed);
   }
 
   private removeRoaches(): void {
-    for (const roach of this.gameScene()?.roaches ?? []) roach.alive = false;
+    for (const roach of this.gameScene()?.roaches ?? []) roach.destroy();
   }
 
   private copyLevel(): void {
