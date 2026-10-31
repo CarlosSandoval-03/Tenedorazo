@@ -58,7 +58,3 @@ export function clamp(value: number, min: number, max: number): number {
 export function lerp(from: number, to: number, t: number): number {
   return from + (to - from) * t;
 }
-
-export function easeOutCubic(t: number): number {
-  return 1 - (1 - t) ** 3;
-}

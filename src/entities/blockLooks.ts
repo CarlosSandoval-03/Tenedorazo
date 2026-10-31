@@ -175,7 +175,7 @@ export function drawSilhouette(p: p5, shape: ShapeDef): void {
   else p.rect(0, 0, shape.width, shape.height, CORNER_RADIUS);
 }
 
-export function boundsOf(shape: ShapeDef): { width: number; height: number } {
+function boundsOf(shape: ShapeDef): { width: number; height: number } {
   if (shape.type === "circle")
     return { width: shape.radius * 2, height: shape.radius * 2 };
   return { width: shape.width, height: shape.height };

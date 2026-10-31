@@ -39,7 +39,7 @@ export const LEVELS: readonly LevelDef[] = [
 ].map(parseLevel);
 
 // Narrows the JSON's strings to the game's kinds; an unknown kind is a broken file.
-export function parseLevel(raw: RawLevel): LevelDef {
+function parseLevel(raw: RawLevel): LevelDef {
   const [twoHats, threeHats, ...extra] = raw.stars;
   if (twoHats === undefined || threeHats === undefined || extra.length > 0)
     throw new Error(`${raw.id}: stars must be two scores`);

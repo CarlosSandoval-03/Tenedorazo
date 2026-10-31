@@ -37,7 +37,7 @@ export function validateLevel(def: LevelDef): string[] {
 }
 
 // The score for destroying everything with one ingredient used: no level can give more.
-export function maxScore(def: LevelDef): number {
+function maxScore(def: LevelDef): number {
   const blocks = def.blocks.reduce(
     (sum, block) => sum + MATERIALS[block.material].score,
     0,
