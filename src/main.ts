@@ -24,7 +24,7 @@ const isDebug =
 
 const sketch = (p: p5) => {
   let scenes: SceneManager | undefined;
-  let debug: { draw(p: p5): void } | undefined;
+  let debug: { update(): void; draw(p: p5): void } | undefined;
 
   p.setup = async () => {
     const canvas = p.createCanvas(CANVAS_WIDTH, CANVAS_HEIGHT).elt;
@@ -55,6 +55,7 @@ const sketch = (p: p5) => {
 
   p.draw = () => {
     if (!scenes) return;
+    debug?.update();
     scenes.frame(p.deltaTime);
     scenes.draw(p);
     debug?.draw(p);

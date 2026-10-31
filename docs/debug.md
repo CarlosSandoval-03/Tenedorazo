@@ -31,7 +31,7 @@ Tools for testing without replaying. They exist only on the dev server, and only
 | `8` | Hold, then drag from a body: on release it is pushed along the drag. |
 | `9` | Copy the current level, as built, as JSON. |
 
-The panel shows the shot's state, bodies awake / total, the step's largest impulse, roaches left, and the score.
+The panel, bottom left, shows the shot's state, bodies moving / total, the step's largest impulse, roaches left, the score, and which toggles are on.
 
 ## How it works
 

@@ -6,27 +6,33 @@ import type { BodyHandle } from "../physics/World";
 import type { GameContext } from "../scenes/GameContext";
 import { GameScene } from "../scenes/GameScene";
 import { INGREDIENT_KINDS } from "../types";
+import { drawImpacts, drawOutlines, drawPanel } from "./debugDraw";
 import { levelAsBuilt } from "./levelAsBuilt";
 
 // The velocity a drag gives the pushed body, per px dragged (1/s).
 const PUSH_SCALE = 6;
-const STILL_ALPHA = 70;
+const SLOW_SPEED = 0.25;
 
 interface Push {
   body: BodyHandle;
   from: Vec;
 }
 
-// Dev-only tools. They reach the game scene through its fields and World's public API.
+// Dev-only tools. They reach the game scene through its fields and World's public API, and the
+// fixed tick through the scene manager's speed.
 export class DebugTools {
   private readonly context: GameContext;
   private readonly heldKeys = new Set<string>();
   private showOutlines = false;
+  private showImpacts = false;
+  private isSlow = false;
+  private isPaused = false;
+  private hasInfiniteIngredients = false;
   private push: Push | null = null;
 
   constructor(context: GameContext, canvas: EventTarget) {
     this.context = context;
-    this.openLevelFromUrl();
+    this.applyUrl();
     window.addEventListener("keydown", (event) => this.onKeyDown(event.code));
     window.addEventListener("keyup", (event) =>
       this.heldKeys.delete(event.code),
@@ -35,31 +41,36 @@ export class DebugTools {
     window.addEventListener("pointerup", () => this.endPush());
   }
 
-  draw(p: p5): void {
+  // Before the frame's ticks: keeps the queue full while ingredients are infinite.
+  update(): void {
     const scene = this.gameScene();
-    if (!scene || !this.showOutlines) return;
-
-    p.push();
-    p.translate(0, FLOOR_SCREEN_Y);
-    p.noFill();
-    p.strokeWeight(1);
-    for (const body of scene.world.handles()) {
-      const color = p.color("#7dff7a");
-      if (scene.world.isBodyStill(body)) color.setAlpha(STILL_ALPHA);
-      p.stroke(color);
-      p.beginShape();
-      for (const { x, y } of scene.world.vertices(body)) p.vertex(x, y);
-      p.endShape(p.CLOSE);
-    }
-    p.pop();
+    if (!scene || !this.hasInfiniteIngredients || scene.queue.length > 0)
+      return;
+    scene.queue.push(...scene.level.ingredients);
   }
 
-  // &level=3-1 opens that level directly; &ingredients=popcorn,cheese replaces its queue.
-  private openLevelFromUrl(): void {
+  draw(p: p5): void {
+    const scene = this.gameScene();
+    if (!scene) return;
+    p.push();
+    p.translate(0, FLOOR_SCREEN_Y);
+    if (this.showOutlines) drawOutlines(p, scene);
+    if (this.showImpacts) drawImpacts(p, scene);
+    p.pop();
+    drawPanel(p, scene, this.flags());
+  }
+
+  // &reset=debug erases the sandbox, &unlock=all opens every level in it, &level=3-1 opens that
+  // level directly, and &ingredients=popcorn,cheese replaces its queue.
+  private applyUrl(): void {
     const params = new URLSearchParams(location.search);
-    const level =
-      LEVELS.find((candidate) => candidate.id === params.get("level")) ??
-      this.gameScene()?.level;
+    const { progress } = this.context;
+    if (params.get("reset") === "debug") progress.clear();
+    if (params.get("unlock") === "all")
+      for (const level of LEVELS)
+        if (!progress.of(level.id)) progress.recordWin(level.id, 0, 1);
+
+    const level = LEVELS.find(({ id }) => id === params.get("level"));
     if (!level) return;
     const ingredients = params
       .get("ingredients")
@@ -73,8 +84,45 @@ export class DebugTools {
 
   private onKeyDown(code: string): void {
     this.heldKeys.add(code);
-    if (code === "Digit1") this.showOutlines = !this.showOutlines;
-    if (code === "Digit9") this.copyLevel();
+    const action = this.keyActions()[code];
+    action?.();
+  }
+
+  private keyActions(): Record<string, () => void> {
+    return {
+      Digit1: () => (this.showOutlines = !this.showOutlines),
+      Digit2: () => (this.showImpacts = !this.showImpacts),
+      Digit3: () => this.togglePause(),
+      Digit4: () => this.stepOnce(),
+      Digit5: () => this.toggleSlow(),
+      Digit6: () =>
+        (this.hasInfiniteIngredients = !this.hasInfiniteIngredients),
+      Digit7: () => this.removeRoaches(),
+      Digit9: () => this.copyLevel(),
+    };
+  }
+
+  private togglePause(): void {
+    this.isPaused = !this.isPaused;
+    this.applySpeed();
+  }
+
+  private stepOnce(): void {
+    if (this.isPaused) this.context.scenes.tick();
+  }
+
+  private toggleSlow(): void {
+    this.isSlow = !this.isSlow;
+    this.applySpeed();
+  }
+
+  private applySpeed(): void {
+    if (this.isPaused) this.context.scenes.speed = 0;
+    else this.context.scenes.speed = this.isSlow ? SLOW_SPEED : 1;
+  }
+
+  private removeRoaches(): void {
+    for (const roach of this.gameScene()?.roaches ?? []) roach.alive = false;
   }
 
   private copyLevel(): void {
@@ -103,6 +151,14 @@ export class DebugTools {
     if (!scene || !push || !scene.world.has(push.body)) return;
     const drag = sub(this.levelPointer(), push.from);
     scene.world.addVelocity(push.body, scale(drag, PUSH_SCALE));
+  }
+
+  private flags(): string {
+    const on: string[] = [];
+    if (this.isPaused) on.push("paused");
+    if (this.isSlow) on.push("slow");
+    if (this.hasInfiniteIngredients) on.push("infinite");
+    return on.join(" ");
   }
 
   private levelPointer(): Vec {
