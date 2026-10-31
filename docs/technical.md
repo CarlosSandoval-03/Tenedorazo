@@ -45,7 +45,7 @@ fork-and-fling/
     ├── entities/         # Entity, Destructible, Block (+ looks), Ground, Roach, Ingredient (+ looks), Launcher
     ├── systems/          # Shot, impactDamage, Scoring, Blasts, Debris, CameraDirector
     ├── levels/           # *.json level files, index, places, buildLevel, validateLevel
-    ├── ui/               # Kitchen (background), HUD, AimPreview, FloatingNumbers, Menu, Hat, PauseMenu, text
+    ├── ui/               # backdrops/ (one per place), HUD, ScoreBar, AimPreview, FloatingNumbers, Menu, Hat, PauseMenu, text
     ├── scenes/           # Title, PlaceSelect, LevelSelect, Game, Result, Ending
     └── debug/            # dev server with ?debug=true only
 ```

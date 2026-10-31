@@ -3,7 +3,7 @@ import { CANVAS_WIDTH, ENDING_LINE_FRAMES, PALETTE } from "../config";
 import { clamp } from "../core/math";
 import type { Scene } from "../core/Scene";
 import { t, type MessagePath } from "../i18n";
-import { drawKitchen } from "../ui/Kitchen";
+import { drawBackdrop } from "../ui/backdrops";
 import { drawWrapped } from "../ui/text";
 import type { GameContext } from "./GameContext";
 import { TitleScene } from "./TitleScene";
@@ -50,7 +50,7 @@ export class EndingScene implements Scene {
 
   draw(p: p5): void {
     const lines = PAGES[this.page] ?? [];
-    drawKitchen(p);
+    drawBackdrop(p, "counter");
     const fade =
       Math.min(this.ticks, ENDING_LINE_FRAMES - this.ticks) / FADE_FRAMES;
     const color = p.color(PALETTE.ui.text);

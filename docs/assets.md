@@ -29,7 +29,7 @@ Every asset file, what uses it, and how it was made. The style draws almost ever
 
 ## Drawn with p5
 
-Everything in the game itself: the kitchen background, the fork and its band, every block, roach, and ingredient with its damage states, debris, the aim preview, floating numbers, the HUD, and the menus.
+Everything in the game itself: each place's backdrop (`ui/backdrops/`), the fork and its band, every block, roach, and ingredient with its damage states, debris, the aim preview, floating numbers, the HUD, and the menus.
 
 ## How the assets were made
 

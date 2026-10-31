@@ -255,6 +255,50 @@ export const KILL_MARGIN = 120;
 
 export const PALETTE = {
   room: { wall: "#14232a", grout: "#11201f" },
+  // Each place's backdrop: quiet, dark, and never a material's or a roach's hue. shape is the
+  // far furniture, near the closer one; accent is the one lit thing (a window, a flame, a lamp).
+  backdrops: {
+    counter: {
+      wall: "#14232a",
+      grout: "#11201f",
+      shape: "#1b2e36",
+      near: "#203740",
+      accent: "#2c4a63",
+      glow: "#e8d9a8",
+    },
+    sink: {
+      wall: "#132629",
+      grout: "#0f1f22",
+      shape: "#1a3236",
+      near: "#1f3b40",
+      accent: "#2b4e5e",
+      glow: "#cfe3e8",
+    },
+    stove: {
+      wall: "#221c1c",
+      grout: "#1a1616",
+      shape: "#2b2423",
+      near: "#342b29",
+      accent: "#3a2f2c",
+      glow: "#6fa8ff",
+    },
+    fridge: {
+      wall: "#16262d",
+      grout: "#132026",
+      shape: "#1d313a",
+      near: "#243b45",
+      accent: "#2f4b57",
+      glow: "#d8f1ff",
+    },
+    pantry: {
+      wall: "#1f1a16",
+      grout: "#181411",
+      shape: "#2a221c",
+      near: "#332a22",
+      accent: "#3b3027",
+      glow: "#e8c98a",
+    },
+  },
   counter: { top: "#8a817a", body: "#6b6460" },
   outline: "#0e1417",
   glass: { fill: "#bfe9f0", shine: "#ffffff" },

@@ -6,7 +6,7 @@ import { LEVELS } from "../levels";
 import { placeOf, type Place } from "../levels/places";
 import type { LevelDef } from "../types";
 import { drawHatRow } from "../ui/Hat";
-import { drawKitchen } from "../ui/Kitchen";
+import { drawBackdrop } from "../ui/backdrops";
 import { Menu, rowCenters, type ButtonSpec } from "../ui/Menu";
 import type { GameContext } from "./GameContext";
 import { GameScene } from "./GameScene";
@@ -56,7 +56,7 @@ export class LevelSelectScene implements Scene {
   }
 
   draw(p: p5): void {
-    drawKitchen(p);
+    drawBackdrop(p, this.place);
     p.noStroke();
     p.fill(PALETTE.ui.text);
     p.textAlign(p.CENTER, p.CENTER);

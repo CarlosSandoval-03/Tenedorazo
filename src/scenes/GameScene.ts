@@ -45,7 +45,7 @@ import {
 import { drawAimPreview } from "../ui/AimPreview";
 import { FloatingNumbers } from "../ui/FloatingNumbers";
 import { drawHint, drawHUD, isOnPauseButton } from "../ui/HUD";
-import { drawCounterBand, drawKitchen } from "../ui/Kitchen";
+import { drawCounterBand, drawBackdrop } from "../ui/backdrops";
 import { PauseMenu } from "../ui/PauseMenu";
 import type { GameContext } from "./GameContext";
 import { LevelSelectScene } from "./LevelSelectScene";
@@ -187,7 +187,7 @@ export class GameScene implements Scene {
 
   // The level through the camera, shaken; then the HUD and the pause menu in screen space.
   draw(p: p5): void {
-    drawKitchen(p);
+    drawBackdrop(p, placeOf(this.level.id), this.camera.view.left);
     drawCounterBand(p);
     p.push();
     p.translate(this.shakeOffset.x, this.shakeOffset.y);
@@ -452,6 +452,7 @@ export class GameScene implements Scene {
 
   private updateEffects(): void {
     for (const target of this.destructibles.values()) target.update();
+    for (const ingredient of this.flying) ingredient.update();
     this.debris.update();
     this.floatingNumbers.update();
     if (this.slowmoFrames > 0) this.slowmoFrames--;

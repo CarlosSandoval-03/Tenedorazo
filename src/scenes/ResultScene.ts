@@ -17,7 +17,7 @@ import {
   type ScoreBreakdown,
 } from "../systems/Scoring";
 import { drawHatRow, HAT_SPACING } from "../ui/Hat";
-import { drawKitchen } from "../ui/Kitchen";
+import { drawBackdrop } from "../ui/backdrops";
 import { Menu, rowCenters, type ButtonSpec } from "../ui/Menu";
 import { placeOf } from "../levels/places";
 import { EndingScene } from "./EndingScene";
@@ -71,7 +71,7 @@ export class ResultScene implements Scene {
 
   draw(p: p5): void {
     const { isWon } = this.result;
-    drawKitchen(p);
+    drawBackdrop(p, placeOf(this.result.level.id));
     p.noStroke();
     p.textAlign(p.CENTER, p.CENTER);
     p.fill(isWon ? PALETTE.ui.gold : PALETTE.ui.text);

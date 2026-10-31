@@ -4,7 +4,7 @@ import type { Scene } from "../core/Scene";
 import { drawIngredientLook } from "../entities/ingredientLooks";
 import { LANGUAGES, language, setLanguage, t } from "../i18n";
 import { INGREDIENT_KINDS } from "../types";
-import { drawKitchen } from "../ui/Kitchen";
+import { drawBackdrop } from "../ui/backdrops";
 import { Menu } from "../ui/Menu";
 import type { GameContext } from "./GameContext";
 import { PlaceSelectScene } from "./PlaceSelectScene";
@@ -52,7 +52,7 @@ export class TitleScene implements Scene {
   }
 
   draw(p: p5): void {
-    drawKitchen(p);
+    drawBackdrop(p, "counter");
     drawCounter(p);
     drawPantry(p);
 
