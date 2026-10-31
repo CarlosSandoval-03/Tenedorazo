@@ -1,6 +1,6 @@
-# Fork & Fling — Overview
+# Tenedorazo — Overview
 
-The idea of the game in one page. Every other document goes deeper into one part of it. *Fork & Fling* is the working title (**Decision (open)**, [implementation-plan.md › Decisions](implementation-plan.md#decisions)).
+The idea of the game in one page. Every other document goes deeper into one part of it. The title is *Tenedorazo*, a blow with a fork: one word, the same in English and Spanish (**Decision**, [implementation-plan.md › Decisions](implementation-plan.md#decisions)).
 
 ## The idea
 

@@ -19,7 +19,7 @@ Dependencies are pinned exactly (`pnpm-workspace.yaml`: `saveExact: true`). No n
 ## Project structure
 
 ```
-fork-and-fling/
+tenedorazo/
 ├── index.html            # page shell: the #game frame
 ├── package.json          # scripts, exact dependency versions, packageManager
 ├── pnpm-lock.yaml
@@ -103,7 +103,7 @@ flowchart TD
 }
 ```
 
-`SavedProgress` (`state.ts`) saves `progress` as JSON under `forkfling.progress` (`try/catch`: blocked storage only stops it from persisting); anything malformed in it is dropped on load. A debug session uses `forkfling.debug.progress` instead. The language is saved apart, under `forkfling.lang`. Unlocks are derived from `progress`, never stored. `introsSeen` comes with the Intros.
+`SavedProgress` (`state.ts`) saves `progress` as JSON under `tenedorazo.progress` (`try/catch`: blocked storage only stops it from persisting); anything malformed in it is dropped on load. A debug session uses `tenedorazo.debug.progress` instead. The language is saved apart, under `tenedorazo.lang`. Unlocks are derived from `progress`, never stored. `introsSeen` comes with the Intros.
 
 ## Runtime conventions
 

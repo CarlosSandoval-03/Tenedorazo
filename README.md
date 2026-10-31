@@ -1,4 +1,4 @@
-# Fork & Fling
+# Tenedorazo
 
 A 2D physics puzzle game in the slingshot genre, set in a kitchen. The Cook is on holiday, the roaches have built forts out of the dishes, and the pantry's ingredients fling themselves from a fork slingshot to take the kitchen back. Glass shatters, cast iron shrugs, jelly bounces, and popcorn pops.
 

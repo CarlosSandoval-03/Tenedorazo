@@ -402,7 +402,7 @@ Not planned yet. Each one becomes a step when the one before is done, in the ord
 | 16 | Score for destruction, not damage | 6 | Open |
 | 17 | MVP: five levels, one per place; no Place select, no Intro, no sound | 6 | Open |
 | 18 | The kitchen theme: the pantry against the roaches, five places | — | Confirmed |
-| 19 | Working title *Fork & Fling* | — | Open |
+| 19 | Title *Tenedorazo*, the same in English and Spanish (was *Fork & Fling*) | — | Confirmed |
 | 20 | Flat vector style drawn by p5; the palette in [art-direction.md › Palette](art-direction.md#palette) | 1 | Open |
 | 21 | One rounded font (Fredoka, OFL) | 6 | Open |
 | 22 | Two languages (en, es) from typed data files | 3 | Open |

@@ -5,9 +5,9 @@ export interface LevelProgress {
   readonly hats: number;
 }
 
-export const PROGRESS_KEY = "forkfling.progress";
+export const PROGRESS_KEY = "tenedorazo.progress";
 // Debug sessions save apart, so they never touch the real progress.
-export const DEBUG_PROGRESS_KEY = "forkfling.debug.progress";
+export const DEBUG_PROGRESS_KEY = "tenedorazo.debug.progress";
 
 export interface RecordedResult {
   readonly best: LevelProgress;

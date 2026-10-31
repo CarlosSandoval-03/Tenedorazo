@@ -35,7 +35,7 @@ What the player reads, where, and in which language. The texts themselves live i
 
 ## Languages
 
-English and Spanish.
+English and Spanish. The title, *Tenedorazo*, is the same in both.
 
 ### Translation files
 

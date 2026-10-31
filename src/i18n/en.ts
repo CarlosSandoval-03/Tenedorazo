@@ -1,6 +1,6 @@
 export const en = {
   title: {
-    name: "Fork & Fling",
+    name: "Tenedorazo",
     tagline: "The pantry fights back",
     play: "Play",
     language: "Language: English",

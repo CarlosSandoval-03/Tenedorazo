@@ -18,7 +18,7 @@ export const LANGUAGES = ["en", "es"] as const;
 export type Language = (typeof LANGUAGES)[number];
 
 const MESSAGES: Record<Language, Messages> = { en, es };
-const LANGUAGE_KEY = "forkfling.lang";
+const LANGUAGE_KEY = "tenedorazo.lang";
 
 let current: Language = "en";
 

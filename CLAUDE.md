@@ -1,4 +1,4 @@
-# Fork & Fling — Working rules for Claude
+# Tenedorazo — Working rules for Claude
 
 A 2D physics puzzle game in the slingshot genre, set in a kitchen: the pantry's ingredients fling themselves from a fork slingshot at the pests that built forts out of the dishes. This file holds only the rules to apply in every session. Everything else is project knowledge in `docs/`: read the relevant document when a task needs it, and never copy its content here.
 

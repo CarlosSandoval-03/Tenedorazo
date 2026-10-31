@@ -2,7 +2,7 @@ import type { Messages } from ".";
 
 export const es: Messages = {
   title: {
-    name: "Fork & Fling",
+    name: "Tenedorazo",
     tagline: "La despensa se defiende",
     play: "Jugar",
     language: "Idioma: Español",
