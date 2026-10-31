@@ -15,9 +15,9 @@ describe("t", () => {
   afterEach(() => setLanguage("en"));
 
   it("reads the current language", () => {
-    expect(t("game.won")).toBe(en.game.won);
+    expect(t("result.won")).toBe(en.result.won);
     setLanguage("es");
-    expect(t("game.won")).toBe(es.game.won);
+    expect(t("result.won")).toBe(es.result.won);
   });
 });
 

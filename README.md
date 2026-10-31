@@ -2,7 +2,7 @@
 
 A 2D physics puzzle game in the slingshot genre, set in a kitchen. The Cook is on holiday, the roaches have built forts out of the dishes, and the pantry's ingredients fling themselves from a fork slingshot to take the kitchen back. Glass shatters, cast iron shrugs, jelly bounces, and popcorn pops.
 
-> **Status:** in development, toward the MVP: five levels, one per place of the kitchen. The plan is in [docs/implementation-plan.md](docs/implementation-plan.md).
+> **Status:** MVP: five levels, one per place of the kitchen, playable from the Title to the Ending, in English and Spanish. What comes next is in [docs/implementation-plan.md](docs/implementation-plan.md#after-the-mvp).
 
 ## Tech stack
 

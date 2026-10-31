@@ -257,8 +257,8 @@ class World {
 | `systems/Scoring.ts` (+ test) | Score from destruction and the unused bonus; `hatsFor(score, stars)`. |
 | `state.ts` (+ test) | Saved progress ([technical.md › Global state](technical.md#global-state)); `isUnlocked(levelIndex)` derived from it. |
 | `assets.ts` (+ test) | Loads the font: the MVP's only asset. |
-| `ui/Button.ts`, `ui/FloatingNumbers.ts`, `ui/PauseMenu.ts` | A pointer- and keyboard-friendly button; score numbers; the pause overlay (Resume, Restart, Levels). |
-| `ui/HUD.ts` | Adds the score, top right. |
+| `ui/Menu.ts`, `ui/Hat.ts`, `ui/FloatingNumbers.ts`, `ui/PauseMenu.ts` | A set of buttons driven by the pointer (hover, click) and the keyboard (arrows, Enter); the chef's hat; score numbers; the pause overlay (Resume, Restart, Levels). The win and lose banner of step 3 is gone: the Result scene replaces it. |
+| `ui/HUD.ts` | Adds the score and a pause button, top right. |
 | `scenes/TitleScene.ts` | Title, Play, Language. |
 | `scenes/LevelSelectScene.ts` | Five buttons, one per place, with their hats; locked ones dimmed. |
 | `scenes/ResultScene.ts` | Cleared or out of ingredients, the score, the hats one by one; Retry, Next (if won), Levels. |

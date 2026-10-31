@@ -1,12 +1,14 @@
 import "./style.css";
 import p5 from "p5";
+import { loadAssets } from "./assets";
 import { CANVAS_HEIGHT, CANVAS_WIDTH, KEYS } from "./config";
 import { fitCanvas } from "./core/display";
 import { Input } from "./core/Input";
+import type { Vec } from "./core/math";
 import { SceneManager } from "./core/SceneManager";
 import { initLanguage } from "./i18n";
-import { LEVELS } from "./levels";
-import { GameScene } from "./scenes/GameScene";
+import { TitleScene } from "./scenes/TitleScene";
+import { DEBUG_PROGRESS_KEY, PROGRESS_KEY, SavedProgress } from "./state";
 
 // The checks cost time every frame, and minified names trip false warnings.
 p5.disableFriendlyErrors = import.meta.env.PROD;
@@ -30,6 +32,7 @@ const sketch = (p: p5) => {
       p.pixelDensity(fitCanvas(canvas, CANVAS_WIDTH, CANVAS_HEIGHT));
     fit();
     window.addEventListener("resize", fit);
+    p.textFont((await loadAssets(p)).font);
 
     const input = new Input({
       canvas,
@@ -38,8 +41,11 @@ const sketch = (p: p5) => {
       bindings: KEYS,
     });
     scenes = new SceneManager(() => input.endFrame());
-    const context = { input, scenes };
-    scenes.change(new GameScene(context, LEVELS[0]));
+    const progress = new SavedProgress(
+      isDebug ? DEBUG_PROGRESS_KEY : PROGRESS_KEY,
+    );
+    const context = { input, scenes, progress };
+    scenes.change(new TitleScene(context));
 
     if (isDebug) {
       const { DebugTools } = await import("./debug");
@@ -56,7 +62,7 @@ const sketch = (p: p5) => {
 };
 
 // The canvas is scaled by CSS only, so the pointer is rescaled back to logical px.
-function toLogical(canvas: HTMLElement, client: { x: number; y: number }) {
+function toLogical(canvas: HTMLElement, client: Vec): Vec {
   const rect = canvas.getBoundingClientRect();
   return {
     x: ((client.x - rect.left) * CANVAS_WIDTH) / rect.width,

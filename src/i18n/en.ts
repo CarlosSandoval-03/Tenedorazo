@@ -1,8 +1,35 @@
 export const en = {
-  game: {
+  title: {
+    name: "Fork & Fling",
+    tagline: "The pantry fights back",
+    play: "Play",
+    language: "Language: English",
+  },
+  levelSelect: {
+    title: "The kitchen",
+    back: "Back",
+  },
+  places: {
+    counter: "The counter",
+    sink: "The sink",
+    stove: "The stove",
+    fridge: "The fridge",
+    pantry: "The pantry",
+  },
+  pause: {
+    title: "Paused",
+    resume: "Resume",
+    restart: "Restart",
+    levels: "Levels",
+  },
+  result: {
     won: "Kitchen cleaned!",
     lost: "Out of ingredients",
-    restartHint: "Press R to try again",
+    score: "Score {score}",
+    best: "Best {score}",
+    retry: "Retry",
+    next: "Next",
+    levels: "Levels",
   },
   // Shown the first time a place's new ingredient loads.
   hints: {
@@ -11,5 +38,15 @@ export const en = {
     chili: "Tap in flight: the spice kicks in",
     cheese: "Tap in flight: the wheel starts rolling",
     popcorn: "Tap in flight: pop!",
+  },
+  ending: {
+    line1: "A key turns in the door: the Cook is back.",
+    line2: "Broken glasses, dented pans… and not a single roach.",
+    line3: "The pantry lines up on the counter, proud.",
+    note: "“The shopping can wait one more day.”",
+    signature: "— a note on the fridge",
+    creditsPhysics: "Physics by Matter.js · Drawing by p5.js",
+    creditsFont: "Font: Fredoka (SIL Open Font License)",
+    thanks: "Thanks for playing!",
   },
 } as const;

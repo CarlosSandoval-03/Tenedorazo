@@ -12,6 +12,7 @@ import {
   MIN_PULL,
   PREVIEW_DOT_SPACING,
   PREVIEW_DOTS,
+  RESULT_DELAY_FRAMES,
   SHAKE_DECAY,
   SHAKE_MAX,
   SHAKE_SCALE,
@@ -27,9 +28,11 @@ import { Launcher } from "../entities/Launcher";
 import type { Roach } from "../entities/Roach";
 import { t } from "../i18n";
 import { buildLevel } from "../levels/buildLevel";
+import { placeNumber } from "../levels/places";
 import { World, type BodyHandle, type Impact } from "../physics/World";
 import { DEBRIS_LOOKS, Debris, type DebrisLook } from "../systems/Debris";
 import { Blasts } from "../systems/Blasts";
+import { hatsFor, unusedBonus } from "../systems/Scoring";
 import { SHOT, Shot, type ShotEvent, type ShotInput } from "../systems/Shot";
 import { applyImpactDamage } from "../systems/impactDamage";
 import {
@@ -39,16 +42,19 @@ import {
   type ProjectileKind,
 } from "../types";
 import { drawAimPreview } from "../ui/AimPreview";
-import { drawBanner } from "../ui/Banner";
-import { drawHint, drawHUD } from "../ui/HUD";
+import { FloatingNumbers } from "../ui/FloatingNumbers";
+import { drawHint, drawHUD, isOnPauseButton } from "../ui/HUD";
 import { drawKitchen } from "../ui/Kitchen";
+import { PauseMenu } from "../ui/PauseMenu";
 import type { GameContext } from "./GameContext";
+import { LevelSelectScene } from "./LevelSelectScene";
+import { ResultScene } from "./ResultScene";
 
 // The hop into the band starts on the counter, this far left of the fork, and peaks this high.
 const HOP_START_OFFSET = 56;
 const HOP_HEIGHT = 40;
 
-export const OUTCOME = {
+const OUTCOME = {
   playing: "playing",
   won: "won",
   lost: "lost",
@@ -62,7 +68,10 @@ export class GameScene implements Scene {
   roaches: Roach[] = [];
   shot: Shot;
   outcome: Outcome = OUTCOME.playing;
+  score = 0;
   queue: IngredientKind[] = [];
+  // The last tick's impacts, kept for the shake and the debug view.
+  lastImpacts: readonly Impact[] = [];
   // The ingredient in the band, then in flight until its shot settles.
   private loaded: Ingredient | null = null;
   private flying: Ingredient[] = [];
@@ -73,6 +82,11 @@ export class GameScene implements Scene {
   private shake = 0;
   private shakeOffset = ZERO;
   private preview: Vec[] = [];
+  private floatingNumbers = new FloatingNumbers();
+  // Open while the game is paused.
+  private pauseMenu: PauseMenu | null = null;
+  // Ticks left between the level's end and its Result.
+  private resultDelay = 0;
   private ground: Ground[] = [];
   private launcher: Launcher;
   private ticks = 0;
@@ -97,8 +111,10 @@ export class GameScene implements Scene {
     this.start();
   }
 
-  // One tick, in order: input and the shot, the step, what the step did, then the level's end.
+  // One tick, in order: pause and restart, input and the shot, the step, what the step did, then
+  // the level's end.
   update(): void {
+    if (this.updatePause()) return;
     if (this.context.input.wasPressed("restart")) {
       this.start();
       return;
@@ -115,6 +131,7 @@ export class GameScene implements Scene {
 
     this.updateEffects();
     this.checkWin();
+    this.countDownToResult();
     this.updateLauncher();
     this.updatePreview();
   }
@@ -131,11 +148,12 @@ export class GameScene implements Scene {
     this.launcher.draw(p);
     for (const ingredient of this.flying) ingredient.draw(p);
     this.debris.draw(p);
+    this.floatingNumbers.draw(p);
     p.pop();
 
-    drawHUD(p, this.ingredientsLeft());
+    drawHUD(p, { ingredientsLeft: this.ingredientsLeft(), score: this.score });
     if (this.hintFor) drawHint(p, t(`hints.${this.hintFor}`));
-    this.drawOutcome(p);
+    this.pauseMenu?.draw(p);
   }
 
   exit(): void {}
@@ -161,7 +179,32 @@ export class GameScene implements Scene {
     this.hintFor = null;
     this.wasHintShown = false;
     this.outcome = OUTCOME.playing;
+    this.score = 0;
+    this.floatingNumbers = new FloatingNumbers();
+    this.pauseMenu = null;
     this.loadNext();
+  }
+
+  // Esc or the pause button opens the pause menu; while it is open, nothing else runs. Returns
+  // whether the game is paused.
+  private updatePause(): boolean {
+    const { input } = this.context;
+    if (this.pauseMenu) {
+      if (input.wasPressed("pause")) this.pauseMenu = null;
+      else this.pauseMenu.update(input);
+      return true;
+    }
+    const wantsPause =
+      input.wasPressed("pause") ||
+      (input.wasPressed("pointer") && isOnPauseButton(input.pointer));
+    if (!wantsPause) return false;
+    this.pauseMenu = new PauseMenu({
+      resume: () => (this.pauseMenu = null),
+      restart: () => this.start(),
+      levels: () =>
+        this.context.scenes.change(new LevelSelectScene(this.context)),
+    });
+    return true;
   }
 
   private shotInput(): ShotInput {
@@ -204,7 +247,12 @@ export class GameScene implements Scene {
     for (const ingredient of this.flying) this.removeIngredient(ingredient);
     this.flying = [];
     if (this.roaches.length === 0) return;
-    if (!this.loadNext()) this.outcome = OUTCOME.lost;
+    if (!this.loadNext()) this.end(OUTCOME.lost);
+  }
+
+  private end(outcome: Outcome): void {
+    this.outcome = outcome;
+    this.resultDelay = RESULT_DELAY_FRAMES;
   }
 
   private loadNext(): boolean {
@@ -219,7 +267,7 @@ export class GameScene implements Scene {
 
   // Place n brings the n-th ingredient, the one its levels teach.
   private showHintFor(kind: IngredientKind): void {
-    const place = Number.parseInt(this.level.id, 10);
+    const place = placeNumber(this.level.id);
     if (this.wasHintShown || kind !== INGREDIENT_KINDS[place - 1]) return;
     this.hintFor = kind;
     this.wasHintShown = true;
@@ -235,6 +283,7 @@ export class GameScene implements Scene {
   }
 
   private applyImpacts(impacts: readonly Impact[]): void {
+    this.lastImpacts = impacts;
     for (const impact of impacts) this.endFlightOnHit(impact);
     if (this.ticks > LEVEL_START_GRACE)
       applyImpactDamage(impacts, this.destructibles);
@@ -294,19 +343,27 @@ export class GameScene implements Scene {
       this.slowmoFrames = FINAL_SLOWMO_FRAMES;
   }
 
-  // onDestroyed runs while the body is still in the world, and returns its debris.
+  // Each destroyed target scores and leaves debris. onDestroyed runs while its body is still in
+  // the world, and returns the debris.
   private prune<T extends Destructible>(
     targets: T[],
     onDestroyed: (target: T) => DebrisLook,
   ): T[] {
     for (const target of targets) {
       if (target.alive) continue;
-      const look = onDestroyed(target);
-      this.debris.burst(this.world.position(target.body), look);
+      const position = this.world.position(target.body);
+      this.debris.burst(position, onDestroyed(target));
+      this.addScore(target.score, position);
       this.world.remove(target.body);
       this.destructibles.delete(target.body);
     }
     return targets.filter((target) => target.alive);
+  }
+
+  private addScore(points: number, at: Vec): void {
+    if (points === 0) return;
+    this.score += points;
+    this.floatingNumbers.spawn(points, at);
   }
 
   private runBlasts(): void {
@@ -319,6 +376,7 @@ export class GameScene implements Scene {
   private updateEffects(): void {
     for (const target of this.destructibles.values()) target.update();
     this.debris.update();
+    this.floatingNumbers.update();
     if (this.slowmoFrames > 0) this.slowmoFrames--;
 
     this.shake *= SHAKE_DECAY;
@@ -333,7 +391,35 @@ export class GameScene implements Scene {
     if (this.outcome !== OUTCOME.playing || this.roaches.length > 0) return;
     const isShotOut =
       this.shot.state === SHOT.flying || this.shot.state === SHOT.settling;
-    if (!isShotOut) this.outcome = OUTCOME.won;
+    if (!isShotOut) this.end(OUTCOME.won);
+  }
+
+  private countDownToResult(): void {
+    if (this.outcome === OUTCOME.playing) return;
+    this.resultDelay--;
+    if (this.resultDelay <= 0) this.showResult();
+  }
+
+  // A won level pays for the ingredients left, and saves its best score and hats.
+  private showResult(): void {
+    const { progress, scenes } = this.context;
+    const isWon = this.outcome === OUTCOME.won;
+    const unused = isWon ? this.ingredientsLeft().length : 0;
+    const score = this.score + unusedBonus(unused);
+    const hats = isWon ? hatsFor(score, this.level.stars) : 0;
+    const recorded = isWon
+      ? progress.recordWin(this.level.id, score, hats)
+      : undefined;
+    scenes.change(
+      new ResultScene(this.context, {
+        level: this.level,
+        isWon,
+        score,
+        hats,
+        best: recorded?.best ?? progress.of(this.level.id),
+        isFirstWin: recorded?.isFirstWin ?? false,
+      }),
+    );
   }
 
   private updateLauncher(): void {
@@ -385,11 +471,5 @@ export class GameScene implements Scene {
 
   private ingredientsLeft(): ProjectileKind[] {
     return this.loaded ? [this.loaded.kind, ...this.queue] : [...this.queue];
-  }
-
-  private drawOutcome(p: p5): void {
-    if (this.outcome === OUTCOME.playing) return;
-    const title = this.outcome === OUTCOME.won ? t("game.won") : t("game.lost");
-    drawBanner(p, title, t("game.restartHint"));
   }
 }

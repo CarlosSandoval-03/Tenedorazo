@@ -44,8 +44,8 @@ fork-and-fling/
     ├── physics/          # World, BodyHandle, damage, blast; the only folder that imports Matter.js
     ├── entities/         # Entity, Destructible, Block (+ looks), Ground, Roach, Ingredient (+ looks), Launcher
     ├── systems/          # Shot, impactDamage, Scoring, Blasts, Debris
-    ├── levels/           # *.json level files, index, buildLevel, validateLevel
-    ├── ui/               # Kitchen (background), HUD, AimPreview, Banner, FloatingNumbers, Button, PauseMenu
+    ├── levels/           # *.json level files, index, places, buildLevel, validateLevel
+    ├── ui/               # Kitchen (background), HUD, AimPreview, FloatingNumbers, Menu, Hat, PauseMenu, text
     ├── scenes/           # Title, LevelSelect, Game, Result, Ending
     └── debug/            # dev server with ?debug=true only
 ```
@@ -98,11 +98,11 @@ flowchart TD
 ```ts
 {
   progress: Record<string, LevelProgress>; // by level id ("2-3"): { bestScore, hats }
-  introsSeen: Set<PlaceId>;                // places whose Intro has played
+  introsSeen: Set<PlaceId>;                // after the MVP: places whose Intro has played
 }
 ```
 
-Saved as JSON under `forkfling.progress` (`try/catch`: blocked storage only stops it from persisting). The language is saved apart, under `forkfling.lang`. Unlocks are derived from `progress`, never stored.
+`SavedProgress` (`state.ts`) saves `progress` as JSON under `forkfling.progress` (`try/catch`: blocked storage only stops it from persisting); anything malformed in it is dropped on load. A debug session uses `forkfling.debug.progress` instead. The language is saved apart, under `forkfling.lang`. Unlocks are derived from `progress`, never stored. `introsSeen` comes with the Intros.
 
 ## Runtime conventions
 

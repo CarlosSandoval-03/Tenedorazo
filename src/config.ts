@@ -287,6 +287,16 @@ export const KEYS = {
   pointer: ["Pointer"],
   ability: ["Space"],
   restart: ["KeyR"],
+  pause: ["Escape"],
+  back: ["Escape"],
+  previous: ["ArrowUp", "ArrowLeft"],
+  next: ["ArrowDown", "ArrowRight"],
+  confirm: ["Enter", "Space"],
 } as const;
+
+// The run: ticks between the level's end and its Result, between hats, and per Ending line.
+export const RESULT_DELAY_FRAMES = 60;
+export const HAT_REVEAL_FRAMES = 30;
+export const ENDING_LINE_FRAMES = 150;
 
 export type Action = keyof typeof KEYS;
