@@ -58,6 +58,7 @@ Sizes and positions snap to a grid of `BLOCK_UNIT` px (16), so pieces line up an
 - at least one roach and one ingredient;
 - every body inside `width` and above the floor;
 - no two bodies overlap (an AABB check is enough on the grid);
+- every block is sized in whole `BLOCK_UNIT`s;
 - the hat thresholds rise, and the 3-hat score is reachable (below the score for destroying everything);
 - the ingredient queue only uses ingredients unlocked by that place.
 

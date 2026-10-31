@@ -25,10 +25,16 @@ export const FLOOR_SCREEN_Y = CANVAS_HEIGHT - 64;
 
 export const BLOCK_UNIT = 16;
 
+// The self-collapse test: a level left alone this many ticks must not move more than the tolerance.
+export const SETTLE_CHECK_FRAMES = 300;
+export const SETTLE_TOLERANCE = 2;
+
 export interface MaterialSpec extends PhysicalMaterial {
   readonly hp: number;
   // How much of an impact's damage this side takes.
   readonly fragility: number;
+  // Scored when a block of it is destroyed.
+  readonly score: number;
 }
 
 export const MATERIALS: Readonly<Record<MaterialKind, MaterialSpec>> = {
@@ -38,6 +44,7 @@ export const MATERIALS: Readonly<Record<MaterialKind, MaterialSpec>> = {
     restitution: 0.1,
     hp: 10,
     fragility: 1.5,
+    score: 100,
   },
   wood: {
     density: 0.0012,
@@ -45,6 +52,7 @@ export const MATERIALS: Readonly<Record<MaterialKind, MaterialSpec>> = {
     restitution: 0.05,
     hp: 80,
     fragility: 1,
+    score: 200,
   },
   castIron: {
     density: 0.004,
@@ -52,6 +60,7 @@ export const MATERIALS: Readonly<Record<MaterialKind, MaterialSpec>> = {
     restitution: 0.02,
     hp: 200,
     fragility: 0.5,
+    score: 500,
   },
 };
 
@@ -66,17 +75,45 @@ export interface RoachSpec extends PhysicalMaterial {
   readonly hp: number;
   readonly fragility: number;
   readonly radius: number;
+  readonly score: number;
 }
 
 const ROACH_BODY = { density: 0.001, friction: 0.8, restitution: 0.25 };
 const ROACH_HP = 20;
 
 export const ROACHES: Readonly<Record<RoachKind, RoachSpec>> = {
-  roach: { ...ROACH_BODY, hp: ROACH_HP, fragility: 1, radius: 16 },
-  capped: { ...ROACH_BODY, hp: ROACH_HP * 2, fragility: 1, radius: 16 },
-  colander: { ...ROACH_BODY, hp: ROACH_HP * 4, fragility: 1, radius: 16 },
-  queen: { ...ROACH_BODY, hp: ROACH_HP * 10, fragility: 1, radius: 32 },
+  roach: {
+    ...ROACH_BODY,
+    hp: ROACH_HP,
+    fragility: 1,
+    radius: 16,
+    score: 1000,
+  },
+  capped: {
+    ...ROACH_BODY,
+    hp: ROACH_HP * 2,
+    fragility: 1,
+    radius: 16,
+    score: 1500,
+  },
+  colander: {
+    ...ROACH_BODY,
+    hp: ROACH_HP * 4,
+    fragility: 1,
+    radius: 16,
+    score: 2500,
+  },
+  queen: {
+    ...ROACH_BODY,
+    hp: ROACH_HP * 10,
+    fragility: 1,
+    radius: 32,
+    score: 10000,
+  },
 };
+
+// Each ingredient left at the end of a won level.
+export const UNUSED_INGREDIENT_BONUS = 2000;
 
 // Damage = max(0, impact − DAMAGE_THRESHOLD) × DAMAGE_SCALE × fragility; resting contact stays below.
 export const DAMAGE_THRESHOLD = 60;
