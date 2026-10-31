@@ -1,14 +1,10 @@
 import "./style.css";
 import p5 from "p5";
-import Matter from "matter-js";
-import {
-  CANVAS_HEIGHT,
-  CANVAS_WIDTH,
-  GRAVITY,
-  SUBSTEPS,
-  TICK_MS,
-} from "./config";
+import { CANVAS_HEIGHT, CANVAS_WIDTH, KEYS } from "./config";
 import { fitCanvas } from "./core/display";
+import { Input } from "./core/Input";
+import { SceneManager } from "./core/SceneManager";
+import { GameScene } from "./scenes/GameScene";
 
 // The checks cost time every frame, and minified names trip false warnings.
 p5.disableFriendlyErrors = import.meta.env.PROD;
@@ -16,39 +12,40 @@ p5.disableFriendlyErrors = import.meta.env.PROD;
 const frame = document.getElementById("game");
 if (!frame) throw new Error("#game is missing from the DOM");
 
-// A temporary sandbox: one box falling onto a floor, until the physics wrapper replaces it.
-const engine = Matter.Engine.create({
-  gravity: { x: 0, y: 1, scale: GRAVITY / 1e6 },
-});
-const floor = Matter.Bodies.rectangle(480, 508, 960, 64, { isStatic: true });
-const box = Matter.Bodies.rectangle(480, 100, 64, 64, { angle: 0.3 });
-Matter.Composite.add(engine.world, [floor, box]);
-
 const sketch = (p: p5) => {
+  let scenes: SceneManager | undefined;
+
   p.setup = () => {
     const canvas = p.createCanvas(CANVAS_WIDTH, CANVAS_HEIGHT).elt;
     const fit = () =>
       p.pixelDensity(fitCanvas(canvas, CANVAS_WIDTH, CANVAS_HEIGHT));
     fit();
     window.addEventListener("resize", fit);
+
+    const input = new Input({
+      canvas,
+      window,
+      toLogical: (client) => toLogical(canvas, client),
+      bindings: KEYS,
+    });
+    scenes = new SceneManager(() => input.endFrame());
+    scenes.change(new GameScene());
   };
 
   p.draw = () => {
-    for (let i = 0; i < SUBSTEPS; i++)
-      Matter.Engine.update(engine, TICK_MS / SUBSTEPS);
-
-    p.background("#14232a");
-    p.rectMode(p.CENTER);
-    p.noStroke();
-    p.fill("#4a5a5e");
-    p.rect(floor.position.x, floor.position.y, 960, 64);
-    p.push();
-    p.translate(box.position.x, box.position.y);
-    p.rotate(box.angle);
-    p.fill("#d9a441");
-    p.rect(0, 0, 64, 64);
-    p.pop();
+    if (!scenes) return;
+    scenes.frame(p.deltaTime);
+    scenes.draw(p);
   };
 };
+
+// The canvas is scaled by CSS only, so the pointer is rescaled back to logical px.
+function toLogical(canvas: HTMLElement, client: { x: number; y: number }) {
+  const rect = canvas.getBoundingClientRect();
+  return {
+    x: ((client.x - rect.left) * CANVAS_WIDTH) / rect.width,
+    y: ((client.y - rect.top) * CANVAS_HEIGHT) / rect.height,
+  };
+}
 
 new p5(sketch, frame);
