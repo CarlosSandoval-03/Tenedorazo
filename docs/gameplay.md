@@ -17,7 +17,7 @@ Releasing with a pull shorter than `MIN_PULL` cancels the shot; the ingredient s
 stateDiagram-v2
     [*] --> loading
     loading --> aiming: ingredient in the band
-    aiming --> loading: pull < MIN_PULL
+    aiming --> aiming: pull < MIN_PULL
     aiming --> flying: release
     flying --> settling: ability used, or first hit
     flying --> settling: off the level

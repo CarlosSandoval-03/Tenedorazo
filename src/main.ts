@@ -34,7 +34,7 @@ const sketch = (p: p5) => {
       bindings: KEYS,
     });
     scenes = new SceneManager(() => input.endFrame());
-    scenes.change(new GameScene());
+    scenes.change(new GameScene({ input, scenes }));
 
     if (isDebug) {
       const { DebugTools } = await import("./debug");

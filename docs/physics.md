@@ -42,7 +42,7 @@ flowchart TD
 | Blocks | Dynamic | Box, circle | Density, friction, restitution from `MATERIALS`. |
 | Roaches | Dynamic | Circle | Slightly bouncy; hp from the roach kind. |
 | Ingredient in the band | **No body** | — | Drawn by the launcher; the body is created on release. |
-| Ingredient in flight | Dynamic | Circle, box | `frictionAir` 0: the aim preview stays honest. |
+| Ingredient in flight | Dynamic | Circle, box | `frictionAir` 0: the aim preview stays honest. After its first hit, `LANDED_FRICTION_AIR`: Matter has no rolling resistance, so without it a meatball would roll forever and the shot would only settle on the timeout. |
 
 Bodies are created in the order the level data lists them, so a level builds identically every time. Matter picks a pair's restitution as the larger of the two and friction as the smaller: jelly makes everything that hits it bounce.
 

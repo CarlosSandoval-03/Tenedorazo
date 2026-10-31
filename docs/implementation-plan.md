@@ -130,7 +130,7 @@ class World {
 | `entities/Ingredient.ts` | A kind, a body once launched, `useAbility()` (a no-op for the meatball). |
 | `systems/Shot.ts` (+ test) | The state machine (below). |
 | `core/math.ts` (+ test) | `launchVelocity(pull)`. |
-| `physics/World.ts` (+ test) | `predictFlight(def, ticks)` ([physics.md › The aim preview](physics.md#the-aim-preview)). |
+| `physics/World.ts` (+ test) | `predictFlight(def, ticks)` ([physics.md › The aim preview](physics.md#the-aim-preview)); `takeImpacts()` already, so the shot knows the ingredient's first hit (step 3 turns impacts into damage). |
 | `ui/AimPreview.ts` | Draws every `PREVIEW_DOT_SPACING`-th predicted position as a dot. |
 | `config.ts` | `INGREDIENTS` (shape, size, density, friction, restitution per kind), `MAX_PULL`, `MIN_PULL`, `LAUNCH_SPEED`, `PREVIEW_DOTS`, `PREVIEW_DOT_SPACING`, `SETTLE_TIMEOUT`, `KILL_Y`. |
 
@@ -139,7 +139,7 @@ class World {
 **The shot's states** follow the diagram in [gameplay.md › The shot](gameplay.md#the-shot). `Shot` takes `{ isStill(): boolean }` and the pointer events; it never sees p5 or the engine.
 
 - `loading`: `LOAD_FRAMES` frames for the hop into the band, then `aiming`.
-- `aiming`: a press within `GRAB_RADIUS` of the band grabs the ingredient; the pull is `clampLength(rest − pointer, MAX_PULL)`. Release under `MIN_PULL` cancels; otherwise launch with `launchVelocity(pull) = pull × LAUNCH_SPEED`, as the body's creation velocity, with `frictionAir: 0`.
+- `aiming`: a press within `GRAB_RADIUS` of the band grabs the ingredient; the pull is `clampLength(rest − pointer, MAX_PULL)`. Release under `MIN_PULL` cancels and keeps aiming; otherwise launch with `launchVelocity(pull) = pull × LAUNCH_SPEED`, as the body's creation velocity, with `frictionAir: 0`.
 - `flying`: a press or Space uses the ability once. The state moves to `settling` on the first impact, on the ability, or when the ingredient leaves the level.
 - `settling`: wait until `isStill()` has held for `SETTLE_FRAMES` ticks in a row, or `SETTLE_TIMEOUT` frames since the launch. Then remove the spent ingredient and go back to `loading`, or report the queue as empty.
 
@@ -163,7 +163,7 @@ class World {
 
 | File | In this step |
 | ---- | ------------ |
-| `physics/World.ts` | `takeImpacts(): Impact[]`, with `Impact = { a: BodyHandle; b: BodyHandle; strength: number }`, recorded in `collisionStart`, one per pair per tick, the largest ([physics.md › Impact damage](physics.md#impact-damage)). |
+| `physics/World.ts` | `takeImpacts(): Impact[]`, with `Impact = { a: BodyHandle; b: BodyHandle; strength: number; point: Vec }`, recorded in `collisionStart`, one per pair per tick, the largest ([physics.md › Impact damage](physics.md#impact-damage)). |
 | `physics/damage.ts` (+ test) | `damageFromImpact(strength, fragility)`. |
 | `entities/Destructible.ts` (+ test) | hp, `damage(amount)`, `damageState()` (intact, cracked, broken), the hit flash. |
 | `entities/Block.ts`, `entities/Roach.ts` | Both extend `Destructible`; the roach draws its shell, eyes, and legs. |
