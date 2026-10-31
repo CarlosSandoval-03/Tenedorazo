@@ -54,9 +54,10 @@ One ending, after the Queen falls: the Cook's key turns in the door. The kitchen
 | Scene | When | Shows |
 | ----- | ---- | ----- |
 | Title | On start | The title over the dark kitchen; Play, Language |
-| Level select | After Play | The five levels, named after their places, locked or open, hats per level |
+| Place select | After Play | The five places, locked or open, with the hats won of all each holds |
+| Level select | After a place | That place's levels, locked or open, hats per level |
 | Game | In a level | The level, the HUD, pause |
 | Result | Level ends | Cleared or out of ingredients, score, hats; retry, next, levels |
 | Ending | After the Queen's level, the first time | The Cook's return, the closing lines, credits |
 
-*After the MVP:* a Place select before the Level select, and an Intro before each place's first level (one illustration, one or two lines). The MVP's Title and Ending are text on the dark kitchen color, without illustrations.
+*Later:* an Intro before each place's first level (one illustration, one or two lines). The MVP's Title and Ending are text on the dark kitchen color, without illustrations.

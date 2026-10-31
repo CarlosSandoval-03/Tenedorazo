@@ -7,7 +7,7 @@ import { INGREDIENT_KINDS } from "../types";
 import { drawKitchen } from "../ui/Kitchen";
 import { Menu } from "../ui/Menu";
 import type { GameContext } from "./GameContext";
-import { LevelSelectScene } from "./LevelSelectScene";
+import { PlaceSelectScene } from "./PlaceSelectScene";
 
 const TITLE_Y = 150;
 const TITLE_SIZE = 72;
@@ -70,7 +70,7 @@ export class TitleScene implements Scene {
   exit(): void {}
 
   private play(): void {
-    this.context.scenes.change(new LevelSelectScene(this.context));
+    this.context.scenes.change(new PlaceSelectScene(this.context));
   }
 }
 

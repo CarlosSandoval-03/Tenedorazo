@@ -28,7 +28,7 @@ import { Launcher } from "../entities/Launcher";
 import type { Roach } from "../entities/Roach";
 import { t } from "../i18n";
 import { buildLevel } from "../levels/buildLevel";
-import { placeNumber } from "../levels/places";
+import { opensItsPlace, placeNumber, placeOf } from "../levels/places";
 import { World, type BodyHandle, type Impact } from "../physics/World";
 import { DEBRIS_LOOKS, Debris, type DebrisLook } from "../systems/Debris";
 import { Blasts } from "../systems/Blasts";
@@ -260,7 +260,9 @@ export class GameScene implements Scene {
       resume: () => (this.pauseMenu = null),
       restart: () => this.start(),
       levels: () =>
-        this.context.scenes.change(new LevelSelectScene(this.context)),
+        this.context.scenes.change(
+          new LevelSelectScene(this.context, placeOf(this.level.id)),
+        ),
     });
     return true;
   }
@@ -333,10 +335,12 @@ export class GameScene implements Scene {
     return true;
   }
 
-  // Place n brings the n-th ingredient, the one its levels teach.
+  // Place n brings the n-th ingredient; its first level teaches it.
   private showHintFor(kind: IngredientKind): void {
     const place = placeNumber(this.level.id);
-    if (this.wasHintShown || kind !== INGREDIENT_KINDS[place - 1]) return;
+    const isNewHere =
+      opensItsPlace(this.level.id) && kind === INGREDIENT_KINDS[place - 1];
+    if (this.wasHintShown || !isNewHere) return;
     this.hintFor = kind;
     this.wasHintShown = true;
   }

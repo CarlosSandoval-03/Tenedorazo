@@ -1,5 +1,5 @@
 import type p5 from "p5";
-import { PALETTE, type Action } from "../config";
+import { CANVAS_WIDTH, PALETTE, type Action } from "../config";
 import type { Input } from "../core/Input";
 import type { Vec } from "../core/math";
 
@@ -101,4 +101,17 @@ function drawButton(p: p5, button: ButtonSpec, isFocused: boolean): void {
   p.text(button.label(), center.x, labelY);
   if (isOn) button.drawContent?.(p, center);
   p.pop();
+}
+
+// The centers of `count` items of `width` in a row, `gap` apart, centered on the screen.
+export function rowCenters(
+  count: number,
+  item: { width: number; gap: number; y: number },
+): Vec[] {
+  const rowWidth = count * item.width + (count - 1) * item.gap;
+  const left = (CANVAS_WIDTH - rowWidth) / 2 + item.width / 2;
+  return Array.from({ length: count }, (_, i) => ({
+    x: left + i * (item.width + item.gap),
+    y: item.y,
+  }));
 }

@@ -46,7 +46,7 @@ fork-and-fling/
     ├── systems/          # Shot, impactDamage, Scoring, Blasts, Debris, CameraDirector
     ├── levels/           # *.json level files, index, places, buildLevel, validateLevel
     ├── ui/               # Kitchen (background), HUD, AimPreview, FloatingNumbers, Menu, Hat, PauseMenu, text
-    ├── scenes/           # Title, LevelSelect, Game, Result, Ending
+    ├── scenes/           # Title, PlaceSelect, LevelSelect, Game, Result, Ending
     └── debug/            # dev server with ?debug=true only
 ```
 

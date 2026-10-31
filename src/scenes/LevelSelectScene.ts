@@ -3,33 +3,41 @@ import { CANVAS_WIDTH, PALETTE } from "../config";
 import type { Scene } from "../core/Scene";
 import { t } from "../i18n";
 import { LEVELS } from "../levels";
-import { placeOf } from "../levels/places";
+import { placeOf, type Place } from "../levels/places";
 import type { LevelDef } from "../types";
 import { drawHatRow } from "../ui/Hat";
 import { drawKitchen } from "../ui/Kitchen";
-import { Menu, type ButtonSpec } from "../ui/Menu";
+import { Menu, rowCenters, type ButtonSpec } from "../ui/Menu";
 import type { GameContext } from "./GameContext";
 import { GameScene } from "./GameScene";
-import { TitleScene } from "./TitleScene";
+import { PlaceSelectScene } from "./PlaceSelectScene";
 
 const TITLE_Y = 90;
 const TITLE_SIZE = 48;
 const CARD_WIDTH = 168;
 const CARD_HEIGHT = 150;
-const CARD_GAP = 16;
+const CARD_GAP = 24;
 const CARD_Y = 280;
 const HAT_SIZE = 20;
 const BACK_CENTER = { x: 110, y: 470 };
 
-// The five levels, one per place, with their hats; locked ones dimmed.
+// The levels of one place, with their hats; locked ones dimmed.
 export class LevelSelectScene implements Scene {
   private readonly context: GameContext;
+  private readonly place: Place;
   private readonly menu: Menu;
 
-  constructor(context: GameContext) {
+  constructor(context: GameContext, place: Place) {
     this.context = context;
+    this.place = place;
+    const levels = LEVELS.filter((level) => placeOf(level.id) === place);
+    const centers = rowCenters(levels.length, {
+      width: CARD_WIDTH,
+      gap: CARD_GAP,
+      y: CARD_Y,
+    });
     this.menu = new Menu([
-      ...LEVELS.map((level, i) => this.levelCard(level, i)),
+      ...levels.map((level, i) => this.levelCard(level, centers[i])),
       {
         label: () => t("levelSelect.back"),
         onPress: () => this.back(),
@@ -53,43 +61,40 @@ export class LevelSelectScene implements Scene {
     p.fill(PALETTE.ui.text);
     p.textAlign(p.CENTER, p.CENTER);
     p.textSize(TITLE_SIZE);
-    p.text(t("levelSelect.title"), CANVAS_WIDTH / 2, TITLE_Y);
+    p.text(t(`places.${this.place}`), CANVAS_WIDTH / 2, TITLE_Y);
     this.menu.draw(p);
   }
 
   exit(): void {}
 
-  private levelCard(level: LevelDef, index: number): ButtonSpec {
+  private levelCard(
+    level: LevelDef,
+    center: { x: number; y: number },
+  ): ButtonSpec {
     const { progress } = this.context;
-    const rowWidth =
-      LEVELS.length * CARD_WIDTH + (LEVELS.length - 1) * CARD_GAP;
-    const left = (CANVAS_WIDTH - rowWidth) / 2 + CARD_WIDTH / 2;
+    const index = LEVELS.indexOf(level);
     return {
-      label: () => t(`places.${placeOf(level.id)}`),
+      label: () => level.id,
       onPress: () =>
         this.context.scenes.change(new GameScene(this.context, level)),
-      center: { x: left + index * (CARD_WIDTH + CARD_GAP), y: CARD_Y },
+      center,
       width: CARD_WIDTH,
       height: CARD_HEIGHT,
       isEnabled: progress.isUnlocked(
         index,
         LEVELS.map(({ id }) => id),
       ),
-      drawContent: (p, center) => {
-        p.fill(PALETTE.ui.dim);
-        p.textSize(20);
-        p.text(level.id, center.x, center.y + 4);
+      drawContent: (p, cardCenter) =>
         drawHatRow(
           p,
-          { x: center.x, y: center.y + 44 },
+          { x: cardCenter.x, y: cardCenter.y + 30 },
           HAT_SIZE,
           progress.of(level.id)?.hats ?? 0,
-        );
-      },
+        ),
     };
   }
 
   private back(): void {
-    this.context.scenes.change(new TitleScene(this.context));
+    this.context.scenes.change(new PlaceSelectScene(this.context));
   }
 }

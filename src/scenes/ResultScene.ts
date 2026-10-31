@@ -18,7 +18,8 @@ import {
 } from "../systems/Scoring";
 import { drawHatRow, HAT_SPACING } from "../ui/Hat";
 import { drawKitchen } from "../ui/Kitchen";
-import { Menu, type ButtonSpec } from "../ui/Menu";
+import { Menu, rowCenters, type ButtonSpec } from "../ui/Menu";
+import { placeOf } from "../levels/places";
 import { EndingScene } from "./EndingScene";
 import type { GameContext } from "./GameContext";
 import { GameScene } from "./GameScene";
@@ -163,15 +164,20 @@ export class ResultScene implements Scene {
       });
     actions.push({
       label: () => t("result.levels"),
-      onPress: () => context.scenes.change(new LevelSelectScene(context)),
+      onPress: () =>
+        context.scenes.change(
+          new LevelSelectScene(context, placeOf(result.level.id)),
+        ),
     });
 
-    const rowWidth =
-      actions.length * BUTTON_WIDTH + (actions.length - 1) * BUTTON_GAP;
-    const left = (CANVAS_WIDTH - rowWidth) / 2 + BUTTON_WIDTH / 2;
+    const centers = rowCenters(actions.length, {
+      width: BUTTON_WIDTH,
+      gap: BUTTON_GAP,
+      y: BUTTON_Y,
+    });
     return actions.map((action, i) => ({
       ...action,
-      center: { x: left + i * (BUTTON_WIDTH + BUTTON_GAP), y: BUTTON_Y },
+      center: centers[i],
       width: BUTTON_WIDTH,
       height: BUTTON_HEIGHT,
     }));

@@ -98,9 +98,9 @@ The bindings live in `config.ts` (`KEYS`). The player's own pan and zoom hold un
 
 ## Structure
 
-- **The MVP:** five levels, one per place (`1-1` to `5-1`), each built around its place's new ingredient or material, in one Level select.
-- *After the MVP:* more levels per place, with the curve in [level-design.md › Difficulty curve](level-design.md#difficulty-curve), and a Place select.
-- A level unlocks when the one before it is won.
+- **Places and levels:** a Place select leads to each place's Level select. The counter has its full curve of four levels (`1-1` to `1-4`); the other places have their first level so far ([level-design.md › Difficulty curve](level-design.md#difficulty-curve)).
+- A level unlocks when the one before it is won, in run order across places; a place opens with its first level.
+- A place's hint shows only in its first level, which teaches its new ingredient.
 
 ## Decisions
 
