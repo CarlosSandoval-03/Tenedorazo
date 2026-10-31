@@ -71,6 +71,11 @@ export class Shot {
     return this.#pull;
   }
 
+  // The pointer holds the ingredient in the band.
+  get isGrabbing(): boolean {
+    return this.isGrabbed;
+  }
+
   // 0 to 1 through the hop into the band.
   get loadProgress(): number {
     return this.#state === SHOT.loading ? this.frames / LOAD_FRAMES : 1;

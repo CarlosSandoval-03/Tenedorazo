@@ -78,7 +78,7 @@ Roaches are the level's goal. They have hp like blocks and take damage the same 
 
 - Impact flash on the block hit, and a screen shake scaled to the impulse, capped (`SHAKE_MAX`).
 - Score numbers float up from what was destroyed.
-- *After the MVP:* the camera follows the ingredient in flight, then eases back to frame the fort while it settles. In the MVP every level fits one screen and the view is fixed.
+- **The camera** ([implementation-plan.md › Step 8](implementation-plan.md#step-8-camera-090)): a level wider than the screen opens on its fort and pans back to the fork. The camera follows the ingredient in flight, frames the fort while it settles, and returns to the fork for the next shot. A level that fits one screen never moves.
 - Slow motion when the last roach goes; only the steps per second change ([physics.md › The step](physics.md#the-step)).
 - A one-line hint the first time a place's new ingredient is loaded.
 
@@ -91,8 +91,10 @@ Roaches are the level's goal. They have hp like blocks and take damage the same 
 | Ability | Click / tap in flight | Space in flight |
 | Restart level | Restart button | R |
 | Pause | Pause button | Esc |
+| Look around (while aiming) | Drag away from the band | A / D |
+| Zoom (while aiming) | Wheel | W / S |
 
-The bindings live in `config.ts` (`KEYS`). *After the MVP:* keyboard aiming (arrows), and camera pan (drag, A / D) and zoom (wheel, W / S).
+The bindings live in `config.ts` (`KEYS`). The player's own pan and zoom hold until the next launch. *After the MVP:* keyboard aiming (arrows).
 
 ## Structure
 

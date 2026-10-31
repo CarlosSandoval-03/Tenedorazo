@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { Input, POINTER_CODE } from "./Input";
+import { Input, POINTER_CODE, WHEEL_UP_CODE } from "./Input";
 
 function setup() {
   const canvas = new EventTarget();
@@ -8,7 +8,11 @@ function setup() {
     canvas,
     window,
     toLogical: (client) => ({ x: client.x / 2, y: client.y / 2 }),
-    bindings: { fire: ["Space", POINTER_CODE], pause: ["Escape"] },
+    bindings: {
+      fire: ["Space", POINTER_CODE],
+      pause: ["Escape"],
+      zoomIn: [WHEEL_UP_CODE],
+    },
   });
   return { canvas, window, input };
 }
@@ -64,6 +68,21 @@ describe("Input", () => {
     expect(input.wasPressed("fire")).toBe(false);
     expect(bound.defaultPrevented).toBe(true);
     expect(unbound.defaultPrevented).toBe(false);
+  });
+
+  it("turns a wheel notch into a press for one tick", () => {
+    const { canvas, input } = setup();
+    const notch = Object.assign(new Event("wheel", { cancelable: true }), {
+      deltaY: -100,
+    });
+
+    canvas.dispatchEvent(notch);
+
+    expect(input.wasPressed("zoomIn")).toBe(true);
+    expect(input.isDown("zoomIn")).toBe(false);
+    expect(notch.defaultPrevented).toBe(true);
+    input.endFrame();
+    expect(input.wasPressed("zoomIn")).toBe(false);
   });
 
   it("releases everything on blur", () => {

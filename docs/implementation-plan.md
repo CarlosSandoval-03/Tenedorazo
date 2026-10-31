@@ -315,7 +315,8 @@ class World {
 | `core/Input.ts` (+ test) | The wheel, as zoom in and out actions. |
 | `scenes/GameScene.ts` | The camera's targets: the opening pan, the fork while aiming, the ingredient in flight, the fort while settling. Dragging away from the band, or A / D, pans; the wheel or W / S zooms. |
 | `debug/` | Drawn through the camera. |
-| `config.ts` | `INTRO_PAN_FRAMES`, `CAMERA_EASE`, `MIN_ZOOM`, `PAN_SPEED`, `ZOOM_STEP`, `FOLLOW_AHEAD`. |
+| `systems/CameraDirector.ts` | What the camera frames, from the shot's state and the player's pan and zoom; keeps `GameScene` to the game's rules. |
+| `config.ts` | `INTRO_HOLD_FRAMES`, `CAMERA_EASE`, `MIN_ZOOM`, `MAX_ZOOM`, `PAN_SPEED`, `ZOOM_STEP`, `FOLLOW_AHEAD`; the pan and zoom keys in `KEYS`. |
 
 ### Specification
 
@@ -323,7 +324,7 @@ class World {
 - The player's pan and zoom hold until the next launch.
 
 ### Done when
-- [ ] A level twice the screen's width opens on its fort and pans back to the fork.
+- [ ] A level wider than the screen opens on its fort and pans back to the fork. (A launch tops out near 1150 px/s, which reaches about 1400 px past the fork on flat ground, so levels stay within about 1600 px unless a raised fork gives more range.)
 - [ ] The flight is always on screen, and the collapse is framed while it settles.
 - [ ] Every one-screen level plays exactly as before.
 

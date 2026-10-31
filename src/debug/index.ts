@@ -1,5 +1,4 @@
 import type p5 from "p5";
-import { FLOOR_SCREEN_Y } from "../config";
 import { scale, sub, type Vec } from "../core/math";
 import { LEVELS } from "../levels";
 import type { BodyHandle } from "../physics/World";
@@ -53,7 +52,7 @@ export class DebugTools {
     const scene = this.gameScene();
     if (!scene) return;
     p.push();
-    p.translate(0, FLOOR_SCREEN_Y);
+    scene.camera.applyTo(p);
     if (this.showOutlines) drawOutlines(p, scene);
     if (this.showImpacts) drawImpacts(p, scene);
     p.pop();
@@ -138,7 +137,7 @@ export class DebugTools {
   private startPush(): void {
     const scene = this.gameScene();
     if (!scene || !this.heldKeys.has("Digit8")) return;
-    const from = this.levelPointer();
+    const from = scene.camera.toLevel(this.context.input.pointer);
     const body = scene.world.bodyAt(from);
     if (body) this.push = { body, from };
   }
@@ -149,7 +148,10 @@ export class DebugTools {
     const push = this.push;
     this.push = null;
     if (!scene || !push || !scene.world.has(push.body)) return;
-    const drag = sub(this.levelPointer(), push.from);
+    const drag = sub(
+      scene.camera.toLevel(this.context.input.pointer),
+      push.from,
+    );
     scene.world.addVelocity(push.body, scale(drag, PUSH_SCALE));
   }
 
@@ -159,10 +161,6 @@ export class DebugTools {
     if (this.isSlow) on.push("slow");
     if (this.hasInfiniteIngredients) on.push("infinite");
     return on.join(" ");
-  }
-
-  private levelPointer(): Vec {
-    return sub(this.context.input.pointer, { x: 0, y: FLOOR_SCREEN_Y });
   }
 
   private gameScene(): GameScene | undefined {

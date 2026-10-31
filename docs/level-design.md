@@ -87,5 +87,5 @@ Each level was checked winnable with one ingredient to spare by a search over si
 
 ## Readability
 
-- The fork and the fort fit on one screen. *After the MVP*, wider levels open with the camera on the fort and pan back to the fork (`INTRO_PAN`).
+- A level is at most about 1600 px wide: the fastest launch reaches about 1400 px past the fork. Wider levels open with the camera on the fort and pan back to the fork.
 - Every roach is at least partly visible from the fork.

@@ -1,7 +1,9 @@
 import { ZERO, type Vec } from "./math";
 
-// The pointer counts as one more key, so a binding can mix it with keys.
+// The pointer and each wheel notch count as more keys, so a binding can mix them with keys.
 export const POINTER_CODE = "Pointer";
+export const WHEEL_UP_CODE = "WheelUp";
+export const WHEEL_DOWN_CODE = "WheelDown";
 
 export type Bindings<Action extends string> = Readonly<
   Record<Action, readonly string[]>
@@ -64,6 +66,9 @@ export class Input<Action extends string> {
       this.movePointer(event);
       this.release(POINTER_CODE);
     });
+    canvas.addEventListener("wheel", (event) => this.onWheel(event), {
+      passive: false,
+    });
     window.addEventListener("keydown", (event) => this.onKey(event, true));
     window.addEventListener("keyup", (event) => this.onKey(event, false));
     window.addEventListener("blur", () => this.releaseAll());
@@ -80,6 +85,15 @@ export class Input<Action extends string> {
     if (this.isBound(code)) event.preventDefault();
     if (isDown) this.press(code);
     else this.release(code);
+  }
+
+  // A notch is a press and a release at once: it shows as pressed for one tick.
+  private onWheel(event: Event): void {
+    if (!("deltaY" in event) || typeof event.deltaY !== "number") return;
+    event.preventDefault();
+    const code = event.deltaY < 0 ? WHEEL_UP_CODE : WHEEL_DOWN_CODE;
+    this.press(code);
+    this.release(code);
   }
 
   private press(code: string): void {

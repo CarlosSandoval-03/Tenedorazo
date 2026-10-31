@@ -40,10 +40,10 @@ fork-and-fling/
     ├── state.ts          # saved progress
     ├── types.ts          # shared types, LevelDef
     ├── i18n/             # en.ts, es.ts, index.ts (detection, t())
-    ├── core/             # Scene, SceneManager, Input, display, drawing, math, random, storage (theme-agnostic)
+    ├── core/             # Scene, SceneManager, Input, Camera, display, drawing, math, random, storage (theme-agnostic)
     ├── physics/          # World, BodyHandle, damage, blast; the only folder that imports Matter.js
     ├── entities/         # Entity, Destructible, Block (+ looks), Ground, Roach, Ingredient (+ looks), Launcher
-    ├── systems/          # Shot, impactDamage, Scoring, Blasts, Debris
+    ├── systems/          # Shot, impactDamage, Scoring, Blasts, Debris, CameraDirector
     ├── levels/           # *.json level files, index, places, buildLevel, validateLevel
     ├── ui/               # Kitchen (background), HUD, AimPreview, FloatingNumbers, Menu, Hat, PauseMenu, text
     ├── scenes/           # Title, LevelSelect, Game, Result, Ending
@@ -109,7 +109,7 @@ flowchart TD
 
 - **Time is in frames.** A fixed 60 Hz tick; `deltaTime` only feeds the accumulator ([physics.md › The step](physics.md#the-step)). Seconds are converted in `config.ts` (`0.5 s` → `30`).
 - **Canvas:** **Decision (open):** 960 × 540 logical px (16:9), scaled to fit the window, letterboxed. `core/display.ts` sets only the canvas's CSS size; the game never sees the scale.
-- **Two coordinate spaces:** level space (px, from the level data: `x` right, `y` down, the floor's top at `y = 0`) and screen space. In the MVP the view is fixed: level space is screen space shifted down by `FLOOR_SCREEN_Y`, applied once in `GameScene.draw()` and once to the pointer in `GameScene`. `Input` itself stays theme-agnostic: its `pointer` is in logical screen px, which the menus use as is. A `Camera` (pan, zoom) comes after the MVP, with wider levels.
+- **Two coordinate spaces:** level space (px, from the level data: `x` right, `y` down, the floor's top at `y = 0`) and screen space. `core/Camera.ts` maps one to the other: a left edge and a zoom, with the floor's line fixed at `FLOOR_SCREEN_Y`, applied once in `GameScene.draw()` and once to the pointer in `GameScene`. `systems/CameraDirector.ts` decides what it frames each tick. `Input` itself stays theme-agnostic: its `pointer` is in logical screen px, which the menus use as is; each wheel notch is a key press (`WheelUp`, `WheelDown`) for one tick.
 - **Vectors:** plain `Vec = { x, y }`, never `p5.Vector` or engine vectors outside `physics/`.
 - **Input:** pointer events on the canvas (mouse and touch the same way), converted from CSS px to logical px; a press is kept until the next tick ends, so a frame that runs no tick never loses it; keys by `KeyboardEvent.code` with `preventDefault()` on game keys; everything released on `blur`.
 

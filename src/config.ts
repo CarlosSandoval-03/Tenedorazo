@@ -283,6 +283,16 @@ export const PALETTE = {
   ui: { text: "#fff1cc", dim: "#8a9a9e", gold: "#f5c242", panel: "#0e1a1f" },
 } as const;
 
+// The camera: how fast it eases toward its target (per tick), the zoom range, the pan and zoom
+// steps, how far ahead of a flight it looks (px), and the opening pan from the fort (ticks).
+export const CAMERA_EASE = 0.08;
+export const MIN_ZOOM = 0.5;
+export const MAX_ZOOM = 1;
+export const PAN_SPEED = 12;
+export const ZOOM_STEP = 0.1;
+export const FOLLOW_AHEAD = 160;
+export const INTRO_HOLD_FRAMES = 70;
+
 export const KEYS = {
   pointer: ["Pointer"],
   ability: ["Space"],
@@ -292,6 +302,10 @@ export const KEYS = {
   previous: ["ArrowUp", "ArrowLeft"],
   next: ["ArrowDown", "ArrowRight"],
   confirm: ["Enter", "Space"],
+  panLeft: ["KeyA"],
+  panRight: ["KeyD"],
+  zoomIn: ["KeyW", "WheelUp"],
+  zoomOut: ["KeyS", "WheelDown"],
 } as const;
 
 // The run: ticks between the level's end and its Result, between hats, and per Ending line.

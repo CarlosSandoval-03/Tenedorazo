@@ -4,7 +4,6 @@ import {
   DEBRIS_SEED,
   FINAL_SLOWMO,
   FINAL_SLOWMO_FRAMES,
-  FLOOR_SCREEN_Y,
   INGREDIENTS,
   KILL_MARGIN,
   KILL_Y,
@@ -19,6 +18,7 @@ import {
 } from "../config";
 import { ZERO, length, lerp, sub, type Vec } from "../core/math";
 import { createRandom, randomBetween } from "../core/random";
+import type { Camera } from "../core/Camera";
 import type { Scene } from "../core/Scene";
 import type { Block } from "../entities/Block";
 import type { Destructible } from "../entities/Destructible";
@@ -32,6 +32,7 @@ import { placeNumber } from "../levels/places";
 import { World, type BodyHandle, type Impact } from "../physics/World";
 import { DEBRIS_LOOKS, Debris, type DebrisLook } from "../systems/Debris";
 import { Blasts } from "../systems/Blasts";
+import { CameraDirector } from "../systems/CameraDirector";
 import { hatsFor, totalScore, unusedBonus } from "../systems/Scoring";
 import { SHOT, Shot, type ShotEvent, type ShotInput } from "../systems/Shot";
 import { applyImpactDamage } from "../systems/impactDamage";
@@ -44,7 +45,7 @@ import {
 import { drawAimPreview } from "../ui/AimPreview";
 import { FloatingNumbers } from "../ui/FloatingNumbers";
 import { drawHint, drawHUD, isOnPauseButton } from "../ui/HUD";
-import { drawKitchen } from "../ui/Kitchen";
+import { drawCounterBand, drawKitchen } from "../ui/Kitchen";
 import { PauseMenu } from "../ui/PauseMenu";
 import type { GameContext } from "./GameContext";
 import { LevelSelectScene } from "./LevelSelectScene";
@@ -97,6 +98,7 @@ export class GameScene implements Scene {
   // The place's new ingredient, while its hint shows; the hint shows once per attempt.
   private hintFor: IngredientKind | null = null;
   private wasHintShown = false;
+  private director: CameraDirector;
   private readonly context: GameContext;
 
   constructor(context: GameContext, level: LevelDef) {
@@ -104,6 +106,7 @@ export class GameScene implements Scene {
     this.level = level;
     this.#shot = new Shot(this.#world, level.launcher);
     this.launcher = new Launcher(level.launcher);
+    this.director = new CameraDirector(level);
   }
 
   // Read-only views for the debug tools; only the scene changes them.
@@ -133,6 +136,10 @@ export class GameScene implements Scene {
 
   get lastImpacts(): readonly Impact[] {
     return this.#lastImpacts;
+  }
+
+  get camera(): Camera {
+    return this.director.camera;
   }
 
   get score(): number {
@@ -175,13 +182,16 @@ export class GameScene implements Scene {
     this.countDownToResult();
     this.updateLauncher();
     this.updatePreview();
+    this.updateCamera();
   }
 
-  // The level in level space, shaken; then the HUD and any banner in screen space.
+  // The level through the camera, shaken; then the HUD and the pause menu in screen space.
   draw(p: p5): void {
     drawKitchen(p);
+    drawCounterBand(p);
     p.push();
-    p.translate(this.shakeOffset.x, FLOOR_SCREEN_Y + this.shakeOffset.y);
+    p.translate(this.shakeOffset.x, this.shakeOffset.y);
+    this.camera.applyTo(p);
     for (const ground of this.ground) ground.draw(p);
     for (const block of this.#blocks) block.draw(p);
     for (const roach of this.#roaches) roach.draw(p);
@@ -216,6 +226,7 @@ export class GameScene implements Scene {
     this.launcher = new Launcher(this.level.launcher);
     this.#shot = new Shot(this.#world, this.level.launcher);
     this.#queue = [...this.level.ingredients];
+    this.director = new CameraDirector(this.level);
     this.flying = [];
     this.debris = new Debris(DEBRIS_SEED);
     this.blasts = new Blasts();
@@ -257,7 +268,7 @@ export class GameScene implements Scene {
   private shotInput(): ShotInput {
     const { input } = this.context;
     return {
-      pointer: sub(input.pointer, { x: 0, y: FLOOR_SCREEN_Y }),
+      pointer: this.camera.toLevel(input.pointer),
       wasPointerPressed: input.wasPressed("pointer"),
       wasPointerReleased: input.wasReleased("pointer"),
       wasAbilityPressed:
@@ -286,6 +297,16 @@ export class GameScene implements Scene {
     ingredient.launch(sub(this.level.launcher, pull), velocity);
     this.flying.push(ingredient);
     this.loaded = null;
+    this.director.onLaunch();
+  }
+
+  private updateCamera(): void {
+    const flight = this.flying[0]?.body;
+    this.director.update(this.context.input, {
+      shotState: this.#shot.state,
+      flightX: flight ? this.#world.position(flight).x : undefined,
+      isGrabbing: this.#shot.isGrabbing,
+    });
   }
 
   // The spent ingredients go with a puff, so they never prop up a fort later. Then the next one
