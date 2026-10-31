@@ -28,7 +28,7 @@ Tools for testing without replaying. They exist only on the dev server, and only
 | `5` | Slow motion (¼ time). |
 | `6` | Infinite ingredients. |
 | `7` | Remove every roach (test the win). |
-| `8` | Hold and click a body to push it. |
+| `8` | Hold, then drag from a body: on release it is pushed along the drag. |
 | `9` | Copy the current level, as built, as JSON. |
 
 The panel shows the shot's state, bodies awake / total, the step's largest impulse, roaches left, and the score.

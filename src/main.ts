@@ -12,10 +12,15 @@ p5.disableFriendlyErrors = import.meta.env.PROD;
 const frame = document.getElementById("game");
 if (!frame) throw new Error("#game is missing from the DOM");
 
+const isDebug =
+  import.meta.env.DEV &&
+  new URLSearchParams(location.search).get("debug") === "true";
+
 const sketch = (p: p5) => {
   let scenes: SceneManager | undefined;
+  let debug: { draw(p: p5): void } | undefined;
 
-  p.setup = () => {
+  p.setup = async () => {
     const canvas = p.createCanvas(CANVAS_WIDTH, CANVAS_HEIGHT).elt;
     const fit = () =>
       p.pixelDensity(fitCanvas(canvas, CANVAS_WIDTH, CANVAS_HEIGHT));
@@ -30,12 +35,18 @@ const sketch = (p: p5) => {
     });
     scenes = new SceneManager(() => input.endFrame());
     scenes.change(new GameScene());
+
+    if (isDebug) {
+      const { DebugTools } = await import("./debug");
+      debug = new DebugTools(scenes, input, canvas);
+    }
   };
 
   p.draw = () => {
     if (!scenes) return;
     scenes.frame(p.deltaTime);
     scenes.draw(p);
+    debug?.draw(p);
   };
 };
 

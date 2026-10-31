@@ -63,7 +63,7 @@ Every step ends with something playable and a version bump ([technical.md › Gi
 | File | In this step |
 | ---- | ------------ |
 | `core/Scene.ts`, `core/SceneManager.ts` (+ test) | The scene interface and the fixed tick ([physics.md › The step](physics.md#the-step)). The test drives `frame(ms)` with fake times: 60, 75, 144, and 30 Hz. |
-| `core/Input.ts` (+ test) | Pointer and keys ([technical.md › Runtime conventions](technical.md#runtime-conventions)): `pointer` (level space), `isDown(action)`, `wasPressed(action)`, `wasReleased(action)`, `endFrame()`. Tested with a plain `EventTarget`. |
+| `core/Input.ts` (+ test) | Pointer and keys ([technical.md › Runtime conventions](technical.md#runtime-conventions)): `pointer` (logical screen px), `isDown(action)`, `wasPressed(action)`, `wasReleased(action)`, `endFrame()`. Tested with a plain `EventTarget`. |
 | `core/math.ts` (+ test) | `Vec` helpers: `add`, `sub`, `scale`, `length`, `normalize`, `rotate`, `clampLength`. |
 | `physics/World.ts` (+ test) | The Matter wrapper (below). |
 | `entities/Entity.ts`, `entities/Block.ts` | `Block` holds a `BodyHandle` and its material, and draws itself from the body's pose. |
@@ -105,7 +105,7 @@ class World {
 - Removals requested during a step (there are none yet) are deferred to after it.
 - The test: a box dropped on a static floor comes to rest at the right height (within 1 px) and `isStill()` turns true.
 
-**The fixed level view.** **Decision:** in the MVP every level fits one 960 px screen and the view never moves, so there is no camera: `GameScene.draw()` translates by `(0, FLOOR_SCREEN_Y)` once, and `Input` converts the pointer the same way. Panning and zoom come after the MVP.
+**The fixed level view.** **Decision:** in the MVP every level fits one 960 px screen and the view never moves, so there is no camera: `GameScene` translates its drawing by `(0, FLOOR_SCREEN_Y)` once, and converts the pointer the same way. Panning and zoom come after the MVP.
 
 **Drawing.** Flat shapes from `PALETTE`, a dark outline, no images ([art-direction.md › Style](art-direction.md#style)).
 
