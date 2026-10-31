@@ -19,7 +19,7 @@ Every step ends with something playable and a version bump ([technical.md › Gi
 | 7 | Visible hats: the hat bar in the HUD, the score breakdown in the Result | `0.8.0` | Done |
 | 8 | Camera: levels wider than one screen, the opening pan, following the flight, pan and zoom | `0.9.0` | Done |
 | 9 | The counter in full: the Place select and levels 1-2 to 1-4 | `0.10.0` | Done |
-| 10 | Look: a night kitchen per place with parallax, richer materials, ingredients, and roaches | `0.11.0` | Next |
+| 10 | Look: a night kitchen per place with parallax, richer materials, ingredients, and roaches | `0.11.0` | Done |
 
 ---
 
