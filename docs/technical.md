@@ -150,7 +150,7 @@ On the dev server only, with `?debug=true`; `main.ts` loads `src/debug/` behind 
 
 ### CI and deploy
 
-`.github/workflows/ci.yml` runs on every push to `main` and every pull request: install with the frozen lockfile, typecheck, test, build. Pushing a `vX.Y.Z` tag runs the same checks, fails if the tag doesn't match the `package.json` version, deploys `dist/` to GitHub Pages, so the published game is always a release, and creates a GitHub Release with `dist/` and the `LICENSE` zipped as `<repository>-vX.Y.Z.zip`, to play offline. The zip must be served (for example `python3 -m http.server` inside it), since browsers refuse module scripts and font loads from `file://`; the release notes say so.
+`.github/workflows/ci.yml` runs on every push to `main` and every pull request: install with the frozen lockfile, typecheck, test, build. Pushing a `vX.Y.Z` tag runs the same checks, fails if the tag doesn't match the `package.json` version, deploys `dist/` to GitHub Pages, so the published game is always a release, and creates a GitHub Release with `dist/`, the `LICENSE`, and a `SOURCE.txt` linking to the tagged source zipped as `<repository>-vX.Y.Z.zip`, to play offline; the release notes link the source too, so a delivered build always leads back to its code. The zip must be served (for example `python3 -m http.server` inside it), since browsers refuse module scripts and font loads from `file://`; the release notes say so.
 
 ```mermaid
 flowchart LR
