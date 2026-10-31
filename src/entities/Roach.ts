@@ -17,6 +17,15 @@ const HEAD_X = -0.85;
 const HEAD_SIZE = 0.75;
 const EYE_SIZE = 0.3;
 const LEG_XS = [-0.5, 0, 0.5];
+const COLANDER_HOLES = [-0.5, -0.1, 0.3, 0.7];
+
+// What each kind wears over its shell, in units of the radius.
+const HEADGEAR: Record<RoachKind, (p: p5, weight: number) => void> = {
+  roach: () => {},
+  capped: drawBottleCap,
+  colander: drawColander,
+  queen: drawJarLidCrown,
+};
 
 export class Roach extends Destructible {
   readonly kind: RoachKind;
@@ -44,6 +53,7 @@ export class Roach extends Destructible {
       p.scale(this.radius);
       this.drawLegs(p);
       this.drawShell(p);
+      HEADGEAR[this.kind](p, OUTLINE_WEIGHT / this.radius);
       this.drawHead(p);
       p.pop();
       // In px, outside the scale, so the cracks keep their stroke width.
@@ -98,4 +108,36 @@ export class Roach extends Destructible {
       -0.8,
     );
   }
+}
+
+function drawBottleCap(p: p5, weight: number): void {
+  p.stroke(PALETTE.outline);
+  p.strokeWeight(weight);
+  p.fill(PALETTE.cap.fill);
+  p.rect(-0.45, -0.95, 1.1, 0.32, 0.08);
+  // The crimped rim.
+  p.stroke(PALETTE.cap.rim);
+  for (let x = -0.35; x < 0.6; x += 0.2) p.line(x, -0.9, x, -0.68);
+}
+
+function drawColander(p: p5, weight: number): void {
+  p.stroke(PALETTE.outline);
+  p.strokeWeight(weight);
+  p.fill(PALETTE.steel.fill);
+  p.arc(0.1, -0.05, 2.15, 1.8, p.PI, p.TWO_PI, p.CHORD);
+  p.noStroke();
+  p.fill(PALETTE.outline);
+  for (const x of COLANDER_HOLES) p.circle(x, -0.45, 0.14);
+}
+
+function drawJarLidCrown(p: p5, weight: number): void {
+  p.stroke(PALETTE.outline);
+  p.strokeWeight(weight);
+  p.fill(PALETTE.crown.fill);
+  p.rect(-0.4, -1.05, 1, 0.38, 0.06);
+  p.triangle(-0.4, -1.05, -0.25, -1.35, -0.1, -1.05);
+  p.triangle(0.0, -1.05, 0.1, -1.4, 0.2, -1.05);
+  p.triangle(0.3, -1.05, 0.45, -1.35, 0.6, -1.05);
+  p.fill(PALETTE.crown.jewel);
+  p.circle(0.1, -0.86, 0.18);
 }
