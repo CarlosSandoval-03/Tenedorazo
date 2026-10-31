@@ -6,9 +6,14 @@ import { drawSilhouette } from "./blockLooks";
 const OUTLINE_WEIGHT = 3;
 const EYE_SIZE = 7;
 const PUPIL_SIZE = 3.5;
+const SHADE_ALPHA = 55;
 
 // Centered on the origin, facing right (the way it flies). The launcher and the HUD use it too.
-export function drawIngredientLook(p: p5, kind: ProjectileKind): void {
+export function drawIngredientLook(
+  p: p5,
+  kind: ProjectileKind,
+  areEyesClosed = false,
+): void {
   const { shape } = INGREDIENTS[kind];
   p.rectMode(p.CENTER);
   p.stroke(PALETTE.ingredients.outline);
@@ -18,9 +23,25 @@ export function drawIngredientLook(p: p5, kind: ProjectileKind): void {
   else drawSilhouette(p, shape);
 
   p.noStroke();
+  if (kind !== "popcorn") drawShade(p, kind);
   DETAILS[kind](p);
   const size = shape.type === "circle" ? shape.radius : shape.height / 2;
-  drawEyes(p, size);
+  drawEyes(p, size, areEyesClosed);
+}
+
+// The lower side in shadow, as if lit from above.
+function drawShade(p: p5, kind: ProjectileKind): void {
+  const { shape } = INGREDIENTS[kind];
+  const shade = p.color(PALETTE.outline);
+  shade.setAlpha(SHADE_ALPHA);
+  p.fill(shade);
+  if (shape.type === "circle") {
+    const inner = shape.radius * 2 - OUTLINE_WEIGHT;
+    p.arc(0, 0, inner, inner, p.PI * 0.1, p.PI * 0.9, p.CHORD);
+  } else {
+    const height = shape.height / 3;
+    p.rect(0, shape.height / 2 - height / 2 - 1, shape.width - 4, height, 3);
+  }
 }
 
 const DETAILS: Record<ProjectileKind, (p: p5) => void> = {
@@ -56,13 +77,21 @@ function drawPuffs(p: p5): void {
 }
 
 // Two eyes near the front, scaled to the body.
-function drawEyes(p: p5, size: number): void {
+function drawEyes(p: p5, size: number, areClosed: boolean): void {
   const scale = Math.min(1, size / 10);
   const x = size * 0.45;
   for (const dx of [-EYE_SIZE * 0.55, EYE_SIZE * 0.55]) {
+    const eyeX = x + dx * scale;
+    if (areClosed) {
+      p.stroke(PALETTE.outline);
+      p.strokeWeight(1.5);
+      p.line(eyeX - 3 * scale, -size * 0.3, eyeX + 3 * scale, -size * 0.3);
+      p.noStroke();
+      continue;
+    }
     p.fill(PALETTE.ingredients.eyeWhite);
-    p.circle(x + dx * scale, -size * 0.3, EYE_SIZE * scale);
+    p.circle(eyeX, -size * 0.3, EYE_SIZE * scale);
     p.fill(PALETTE.outline);
-    p.circle(x + dx * scale + 1, -size * 0.3, PUPIL_SIZE * scale);
+    p.circle(eyeX + 1, -size * 0.3, PUPIL_SIZE * scale);
   }
 }

@@ -18,6 +18,9 @@ const HEAD_SIZE = 0.75;
 const EYE_SIZE = 0.3;
 const LEG_XS = [-0.5, 0, 0.5];
 const COLANDER_HOLES = [-0.5, -0.1, 0.3, 0.7];
+// The antennae twitch: how far (in radii) and how fast (rad/frame).
+const TWITCH_AMOUNT = 0.12;
+const TWITCH_SPEED = 0.18;
 
 // What each kind wears over its shell, in units of the radius.
 const HEADGEAR: Record<RoachKind, (p: p5, weight: number) => void> = {
@@ -30,6 +33,8 @@ const HEADGEAR: Record<RoachKind, (p: p5, weight: number) => void> = {
 export class Roach extends Destructible {
   readonly kind: RoachKind;
   private readonly radius: number;
+  // Each roach twitches on its own beat.
+  private readonly twitchPhase: number;
   private readonly world: World;
 
   constructor(world: World, kind: RoachKind, position: Vec) {
@@ -44,6 +49,7 @@ export class Roach extends Destructible {
     this.world = world;
     this.kind = kind;
     this.radius = spec.radius;
+    this.twitchPhase = position.x;
   }
 
   draw(p: p5): void {
@@ -94,7 +100,9 @@ export class Roach extends Destructible {
     p.circle(HEAD_X, 0.1, HEAD_SIZE);
     p.fill(PALETTE.roach.eyes);
     p.circle(HEAD_X - 0.1, 0, EYE_SIZE);
-    // The antennae sweep up and forward.
+    // The antennae sweep up and forward, and never quite stop twitching.
+    const twitch =
+      TWITCH_AMOUNT * Math.sin(p.frameCount * TWITCH_SPEED + this.twitchPhase);
     p.noFill();
     p.strokeWeight(LEG_WEIGHT / this.radius);
     p.bezier(
@@ -103,9 +111,9 @@ export class Roach extends Destructible {
       HEAD_X - 0.2,
       -0.9,
       HEAD_X - 0.6,
-      -1,
+      -1 + twitch,
       HEAD_X - 0.9,
-      -0.8,
+      -0.8 + twitch * 1.5,
     );
   }
 }

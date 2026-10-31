@@ -15,6 +15,11 @@ const JELLY_CORNER_RADIUS = 10;
 const VALVE_WIDTH = 10;
 const VALVE_HEIGHT = 12;
 const FLASH_ALPHA = 200;
+const HIGHLIGHT_ALPHA = 70;
+const HIGHLIGHT_INSET = 3;
+const SHADE_ALPHA = 60;
+const END_CAP = 3;
+const RIVET_SIZE = 4;
 
 // Crack polylines as fractions of the block's half size, so they fit any shape.
 const CRACKS: Record<DamageState, readonly (readonly [number, number])[][]> = {
@@ -93,12 +98,18 @@ function drawGlass(p: p5, shape: ShapeDef): void {
   p.fill(fill);
   drawSilhouette(p, shape);
 
-  // One shine line along the long side.
+  // The lip at each short end, and one shine line along the long side.
   const { width, height } = boundsOf(shape);
+  const isUpright = height >= width;
   p.stroke(PALETTE.glass.shine);
   p.strokeWeight(2);
-  if (height >= width) p.line(-width / 4, -height / 3, -width / 4, height / 4);
-  else p.line(-width / 3, -height / 4, width / 4, -height / 4);
+  if (isUpright) {
+    p.line(-width / 2 + 3, -height / 2 + 4, width / 2 - 3, -height / 2 + 4);
+    p.line(-width / 4, -height / 3, -width / 4, height / 4);
+  } else {
+    p.line(-width / 2 + 4, -height / 2 + 3, -width / 2 + 4, height / 2 - 3);
+    p.line(-width / 3, -height / 4, width / 4, -height / 4);
+  }
 }
 
 function drawWood(p: p5, shape: ShapeDef): void {
@@ -120,6 +131,23 @@ function drawWood(p: p5, shape: ShapeDef): void {
     for (let x = -width / 2 + GRAIN_SPACING; x < width / 2; x += GRAIN_SPACING)
       p.line(x, -height / 2 + 4, x, height / 2 - 4);
   }
+  drawWoodEnds(p, width, height);
+  drawHighlight(p, shape);
+}
+
+// The cut ends show darker end grain, and the long side a knot.
+function drawWoodEnds(p: p5, width: number, height: number): void {
+  p.noStroke();
+  p.fill(PALETTE.wood.grain);
+  if (width >= height) {
+    p.rect(-width / 2 + END_CAP, 0, END_CAP, height - 4);
+    p.rect(width / 2 - END_CAP, 0, END_CAP, height - 4);
+    p.ellipse(width / 5, 0, Math.min(10, width / 6), height / 3);
+  } else {
+    p.rect(0, -height / 2 + END_CAP, width - 4, END_CAP);
+    p.rect(0, height / 2 - END_CAP, width - 4, END_CAP);
+    p.ellipse(0, height / 5, width / 3, Math.min(10, height / 6));
+  }
 }
 
 function drawCastIron(p: p5, shape: ShapeDef): void {
@@ -134,6 +162,22 @@ function drawCastIron(p: p5, shape: ShapeDef): void {
   if (shape.type === "circle") p.circle(0, 0, width - RIM_INSET * 2);
   else
     p.rect(0, 0, width - RIM_INSET * 2, height - RIM_INSET * 2, CORNER_RADIUS);
+  if (shape.type === "box") drawRivets(p, width, height);
+  drawHighlight(p, shape);
+}
+
+function drawRivets(p: p5, width: number, height: number): void {
+  p.noStroke();
+  p.fill(PALETTE.castIron.rim);
+  const x = width / 2 - RIM_INSET * 2;
+  const y = height / 2 - RIM_INSET * 2;
+  for (const [dx, dy] of [
+    [-x, -y],
+    [x, -y],
+    [-x, y],
+    [x, y],
+  ])
+    p.circle(dx, dy, RIVET_SIZE);
 }
 
 function drawJelly(p: p5, shape: ShapeDef): void {
@@ -144,10 +188,14 @@ function drawJelly(p: p5, shape: ShapeDef): void {
   if (shape.type === "circle") p.circle(0, 0, width);
   else p.rect(0, 0, width, height, JELLY_CORNER_RADIUS);
 
-  // A soft shine in the top left corner.
+  // A soft shine in the top left corner, and the deeper color pooling at the bottom.
   p.noStroke();
   p.fill(PALETTE.jelly.shine);
   p.ellipse(-width / 4, -height / 4, width / 4, height / 6);
+  const shade = p.color(PALETTE.outline);
+  shade.setAlpha(SHADE_ALPHA);
+  p.fill(shade);
+  p.rect(0, height / 2 - height / 8, width - 8, height / 4 - 4, 6);
 }
 
 function drawPressureCooker(p: p5, shape: ShapeDef): void {
@@ -168,6 +216,40 @@ function drawPressureCooker(p: p5, shape: ShapeDef): void {
     -height / 6,
   );
   p.line(-width / 2 + RIM_INSET, height / 6, width / 2 - RIM_INSET, height / 6);
+  // The handles on either side of the lid.
+  p.noStroke();
+  p.fill(PALETTE.outline);
+  p.rect(-width / 2 + RIM_INSET + 3, -height / 6, 6, 4, 2);
+  p.rect(width / 2 - RIM_INSET - 3, -height / 6, 6, 4, 2);
+  drawHighlight(p, shape);
+}
+
+// One highlight per shape, along its top edge, as if lit from above.
+function drawHighlight(p: p5, shape: ShapeDef): void {
+  const light = p.color(PALETTE.flash);
+  light.setAlpha(HIGHLIGHT_ALPHA);
+  p.noFill();
+  p.stroke(light);
+  p.strokeWeight(2);
+  const { width, height } = boundsOf(shape);
+  if (shape.type === "circle") {
+    p.arc(
+      0,
+      0,
+      width - HIGHLIGHT_INSET * 2,
+      height - HIGHLIGHT_INSET * 2,
+      p.PI * 1.1,
+      p.PI * 1.6,
+    );
+    return;
+  }
+  const y = -height / 2 + HIGHLIGHT_INSET;
+  p.line(
+    -width / 2 + HIGHLIGHT_INSET + 2,
+    y,
+    width / 2 - HIGHLIGHT_INSET - 2,
+    y,
+  );
 }
 
 export function drawSilhouette(p: p5, shape: ShapeDef): void {

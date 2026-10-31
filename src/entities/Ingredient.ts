@@ -18,6 +18,12 @@ import { drawIngredientLook } from "./ingredientLooks";
 
 // The split peas start side by side, this far apart, so they never overlap.
 const PEA_GAP = 16;
+// Squash and stretch at the launch and the first hit: how far, and for how many ticks.
+const SQUASH_AMOUNT = 0.22;
+const SQUASH_FRAMES = 10;
+// A blink every BLINK_PERIOD frames, lasting BLINK_FRAMES; each kind on its own beat.
+const BLINK_PERIOD = 200;
+const BLINK_FRAMES = 8;
 
 // What an ability can do beyond its own body: add projectiles, set off a blast.
 export interface AbilityEffects {
@@ -30,6 +36,7 @@ export interface AbilityEffects {
 export class Ingredient extends Entity {
   readonly kind: ProjectileKind;
   #body: BodyHandle | null = null;
+  #squashTicks = 0;
   private readonly world: World;
 
   constructor(world: World, kind: ProjectileKind) {
@@ -45,6 +52,11 @@ export class Ingredient extends Entity {
 
   launch(position: Vec, velocity: Vec): void {
     this.#body = this.world.createBody(this.bodyDef(position, velocity));
+    this.#squashTicks = SQUASH_FRAMES;
+  }
+
+  update(): void {
+    if (this.#squashTicks > 0) this.#squashTicks--;
   }
 
   // The body a launch creates; the aim preview flies the same one.
@@ -82,7 +94,9 @@ export class Ingredient extends Entity {
 
   // The flight is over: from now on it rolls to a stop instead of forever.
   land(): void {
-    if (this.body) this.world.setFrictionAir(this.body, LANDED_FRICTION_AIR);
+    if (!this.body) return;
+    this.world.setFrictionAir(this.body, LANDED_FRICTION_AIR);
+    this.#squashTicks = SQUASH_FRAMES;
   }
 
   remove(): void {
@@ -97,7 +111,12 @@ export class Ingredient extends Entity {
 
   // Also used by the launcher, while the ingredient sits in the band without a body.
   drawAt(p: p5, position: Vec, angle: number): void {
-    drawInPose(p, position, angle, () => drawIngredientLook(p, this.kind));
+    const squash = (SQUASH_AMOUNT * this.#squashTicks) / SQUASH_FRAMES;
+    const beat = (p.frameCount + this.kind.length * 37) % BLINK_PERIOD;
+    drawInPose(p, position, angle, () => {
+      p.scale(1 + squash, 1 - squash);
+      drawIngredientLook(p, this.kind, beat < BLINK_FRAMES);
+    });
   }
 
   // The siblings split up: the pod is replaced by peas fanned around its heading.

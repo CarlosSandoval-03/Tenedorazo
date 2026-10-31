@@ -6,10 +6,15 @@ import type { Ingredient } from "./Ingredient";
 
 // The fork, in px from the band's rest point.
 const PRONG_GAP = 36;
-const PRONG_WIDTH = 8;
+const TINE_WIDTH = 6;
 const PRONG_ABOVE_REST = 14;
+// The inner tines are shorter than the outer prongs, which hold the band.
+const INNER_TINE_DROP = 6;
+const CROSSBAR_HEIGHT = 8;
 const NECK_BELOW_REST = 34;
-const HANDLE_WIDTH = 12;
+const NECK_LENGTH = 18;
+const HANDLE_WIDTH = 14;
+const SHINE_ALPHA = 140;
 const OUTLINE_WEIGHT = 3;
 const BAND_WEIGHT = 5;
 
@@ -48,26 +53,74 @@ export class Launcher extends Entity {
     this.drawBand(p, this.prongTip(1), loaded.position);
   }
 
+  // A table fork standing on its handle: the handle down to the counter's top (level y = 0), a
+  // neck widening into the crossbar, two outer prongs for the band and two shorter inner tines.
   private drawFork(p: p5): void {
     const { x, y } = this.rest;
-    const neckY = y + NECK_BELOW_REST;
+    const crossbarY = y + NECK_BELOW_REST;
+    const neckBottom = crossbarY + NECK_LENGTH;
+    const halfSpan = PRONG_GAP / 2 + TINE_WIDTH / 2;
 
     p.rectMode(p.CORNERS);
     p.stroke(PALETTE.outline);
     p.strokeWeight(OUTLINE_WEIGHT);
     p.fill(PALETTE.fork.metal);
-    // The handle runs down to the counter's top (level y = 0).
-    p.rect(x - HANDLE_WIDTH / 2, neckY, x + HANDLE_WIDTH / 2, 0);
-    p.rect(x - PRONG_GAP / 2, neckY - PRONG_WIDTH, x + PRONG_GAP / 2, neckY);
-    for (const side of [-1, 1] as const) {
-      const tip = this.prongTip(side);
+    p.rect(
+      x - HANDLE_WIDTH / 2,
+      neckBottom - 4,
+      x + HANDLE_WIDTH / 2,
+      0,
+      7,
+      7,
+      2,
+      2,
+    );
+    p.quad(
+      x - HANDLE_WIDTH / 2,
+      neckBottom,
+      x + HANDLE_WIDTH / 2,
+      neckBottom,
+      x + halfSpan,
+      crossbarY,
+      x - halfSpan,
+      crossbarY,
+    );
+    for (const tineX of [
+      -PRONG_GAP / 2,
+      -PRONG_GAP / 6,
+      PRONG_GAP / 6,
+      PRONG_GAP / 2,
+    ]) {
+      const isInner = Math.abs(tineX) < PRONG_GAP / 2;
+      const top = y - PRONG_ABOVE_REST + (isInner ? INNER_TINE_DROP : 0);
       p.rect(
-        tip.x - PRONG_WIDTH / 2,
-        y - PRONG_ABOVE_REST,
-        tip.x + PRONG_WIDTH / 2,
-        neckY,
+        x + tineX - TINE_WIDTH / 2,
+        top,
+        x + tineX + TINE_WIDTH / 2,
+        crossbarY,
+        3,
+        3,
+        0,
+        0,
       );
     }
+    p.rect(
+      x - halfSpan,
+      crossbarY - CROSSBAR_HEIGHT,
+      x + halfSpan,
+      crossbarY,
+      2,
+    );
+    this.drawShine(p, neckBottom);
+  }
+
+  private drawShine(p: p5, neckBottom: number): void {
+    const shine = p.color(PALETTE.flash);
+    shine.setAlpha(SHINE_ALPHA);
+    p.stroke(shine);
+    p.strokeWeight(2);
+    const x = this.rest.x - HANDLE_WIDTH / 4;
+    p.line(x, neckBottom + 6, x, -10);
   }
 
   private drawBand(p: p5, from: Vec, to: Vec): void {
