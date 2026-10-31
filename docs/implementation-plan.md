@@ -13,8 +13,8 @@ Every step ends with something playable and a version bump ([technical.md › Gi
 | 2 | The shot: the fork, pull, aim preview, launch, settle, the meatball | `0.3.0` | Done |
 | 3 | Damage: impulses to hp, damage states, roaches, win and lose, restart, HUD | `0.4.0` | Done |
 | 4 | Levels as data: loader, validation, the self-collapse test, level 1-1 from JSON | `0.5.0` | Done |
-| 5 | Abilities and kitchen materials: the other four ingredients, jelly, pressure cookers, armored roaches and the Queen; levels 2-1 to 5-1 | `0.6.0` | Next |
-| 6 | The run: Title, Level select, Result, Ending, score and hats, saved progress, pause | `0.7.0` | — |
+| 5 | Abilities and kitchen materials: the other four ingredients, jelly, pressure cookers, armored roaches and the Queen; levels 2-1 to 5-1 | `0.6.0` | Done |
+| 6 | The run: Title, Level select, Result, Ending, score and hats, saved progress, pause | `0.7.0` | Next |
 | — | **MVP**: the five levels playable from the Title to the Ending, deployed | `0.7.0` | — |
 
 ---
