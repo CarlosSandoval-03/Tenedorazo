@@ -5,6 +5,7 @@ import { fitCanvas } from "./core/display";
 import { Input } from "./core/Input";
 import { SceneManager } from "./core/SceneManager";
 import { initLanguage } from "./i18n";
+import { LEVELS } from "./levels";
 import { GameScene } from "./scenes/GameScene";
 
 // The checks cost time every frame, and minified names trip false warnings.
@@ -37,11 +38,12 @@ const sketch = (p: p5) => {
       bindings: KEYS,
     });
     scenes = new SceneManager(() => input.endFrame());
-    scenes.change(new GameScene({ input, scenes }));
+    const context = { input, scenes };
+    scenes.change(new GameScene(context, LEVELS[0]));
 
     if (isDebug) {
       const { DebugTools } = await import("./debug");
-      debug = new DebugTools(scenes, input, canvas);
+      debug = new DebugTools(context, canvas);
     }
   };
 

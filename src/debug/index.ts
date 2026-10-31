@@ -1,10 +1,11 @@
 import type p5 from "p5";
-import { FLOOR_SCREEN_Y, type Action } from "../config";
-import type { Input } from "../core/Input";
+import { FLOOR_SCREEN_Y } from "../config";
 import { scale, sub, type Vec } from "../core/math";
-import type { SceneManager } from "../core/SceneManager";
+import { LEVELS } from "../levels";
 import type { BodyHandle } from "../physics/World";
+import type { GameContext } from "../scenes/GameContext";
 import { GameScene } from "../scenes/GameScene";
+import { levelAsBuilt } from "./levelAsBuilt";
 
 // The velocity a drag gives the pushed body, per px dragged (1/s).
 const PUSH_SCALE = 6;
@@ -17,15 +18,14 @@ interface Push {
 
 // Dev-only tools. They reach the game scene through its fields and World's public API.
 export class DebugTools {
-  private readonly scenes: SceneManager;
-  private readonly input: Input<Action>;
+  private readonly context: GameContext;
   private readonly heldKeys = new Set<string>();
   private showOutlines = false;
   private push: Push | null = null;
 
-  constructor(scenes: SceneManager, input: Input<Action>, canvas: EventTarget) {
-    this.scenes = scenes;
-    this.input = input;
+  constructor(context: GameContext, canvas: EventTarget) {
+    this.context = context;
+    this.openLevelFromUrl();
     window.addEventListener("keydown", (event) => this.onKeyDown(event.code));
     window.addEventListener("keyup", (event) =>
       this.heldKeys.delete(event.code),
@@ -53,9 +53,27 @@ export class DebugTools {
     p.pop();
   }
 
+  // &level=3-1 opens that level directly.
+  private openLevelFromUrl(): void {
+    const id = new URLSearchParams(location.search).get("level");
+    const level = LEVELS.find((candidate) => candidate.id === id);
+    if (level) this.context.scenes.change(new GameScene(this.context, level));
+  }
+
   private onKeyDown(code: string): void {
     this.heldKeys.add(code);
     if (code === "Digit1") this.showOutlines = !this.showOutlines;
+    if (code === "Digit9") this.copyLevel();
+  }
+
+  private copyLevel(): void {
+    const scene = this.gameScene();
+    if (!scene) return;
+    const json = JSON.stringify(levelAsBuilt(scene), null, 2);
+    navigator.clipboard
+      .writeText(json)
+      .then(() => console.info(`Copied level ${scene.level.id} as built`))
+      .catch(() => console.info(json));
   }
 
   private startPush(): void {
@@ -77,11 +95,11 @@ export class DebugTools {
   }
 
   private levelPointer(): Vec {
-    return sub(this.input.pointer, { x: 0, y: FLOOR_SCREEN_Y });
+    return sub(this.context.input.pointer, { x: 0, y: FLOOR_SCREEN_Y });
   }
 
   private gameScene(): GameScene | undefined {
-    const scene = this.scenes.current;
+    const scene = this.context.scenes.current;
     return scene instanceof GameScene ? scene : undefined;
   }
 }

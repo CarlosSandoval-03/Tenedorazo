@@ -197,10 +197,11 @@ class World {
 | File | In this step |
 | ---- | ------------ |
 | `types.ts` | `LevelDef` and its parts ([level-design.md › Format](level-design.md#format)). |
-| `levels/index.ts` | Imports the five JSON files (Vite imports JSON natively) and exports them, in order, as `LevelDef[]`. **Decision:** imported, not fetched, so a level is typed and bundled, and `validateLevel` checks it in the tests. |
+| `levels/index.ts` | Imports the JSON files (Vite imports JSON natively), narrows their kinds with `parseLevel`, and exports them, in order, as `LevelDef[]`; levels whose materials don't exist yet (4-1, 5-1) join in step 5. **Decision:** imported, not fetched, so a level is typed and bundled, and `validateLevel` checks it in the tests. |
 | `levels/validateLevel.ts` (+ test) | The checks in [level-design.md › Validation](level-design.md#validation); the test runs them over every level. |
-| `levels/settle.test.ts` | The self-collapse test over every level (it skips levels whose materials or roaches don't exist yet; step 5 removes the skip). |
+| `levels/settle.test.ts` | The self-collapse test over every level in `LEVELS`. |
 | `levels/buildLevel.ts` | Creates the ground, blocks, and roaches in data order; returns the entities and the `Map<BodyHandle, Destructible>`. |
+| `systems/impactDamage.ts` | `applyImpactDamage(impacts, targets)`: the one damage pass, shared by `GameScene` and the self-collapse test. |
 | `scenes/GameScene.ts` | Takes a `LevelDef`; the hard-coded fort is gone. |
 | `debug/` | `&level=1-1` opens a level directly; `9` copies the current level (as built) as JSON. |
 

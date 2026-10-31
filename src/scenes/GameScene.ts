@@ -19,67 +19,28 @@ import {
 import { ZERO, length, lerp, sub, type Vec } from "../core/math";
 import { createRandom, randomBetween } from "../core/random";
 import type { Scene } from "../core/Scene";
-import { Block, type BlockSpec } from "../entities/Block";
+import type { Block } from "../entities/Block";
 import type { Destructible } from "../entities/Destructible";
-import { Ground } from "../entities/Ground";
+import type { Ground } from "../entities/Ground";
 import { Ingredient } from "../entities/Ingredient";
 import { Launcher } from "../entities/Launcher";
-import { Roach } from "../entities/Roach";
+import type { Roach } from "../entities/Roach";
 import { t } from "../i18n";
-import { damageFromImpact } from "../physics/damage";
+import { buildLevel } from "../levels/buildLevel";
 import { World, type BodyHandle, type Impact } from "../physics/World";
 import { DEBRIS_LOOKS, Debris, type DebrisLook } from "../systems/Debris";
 import { SHOT, Shot, type ShotEvent, type ShotInput } from "../systems/Shot";
-import type { IngredientKind, RoachKind } from "../types";
+import { applyImpactDamage } from "../systems/impactDamage";
+import type { IngredientKind, LevelDef } from "../types";
 import { drawAimPreview } from "../ui/AimPreview";
 import { drawBanner } from "../ui/Banner";
 import { drawHUD } from "../ui/HUD";
 import { drawKitchen } from "../ui/Kitchen";
 import type { GameContext } from "./GameContext";
 
-const LEVEL_WIDTH = 960;
-const LAUNCHER_REST = { x: 160, y: -96 };
-const TEST_QUEUE: IngredientKind[] = Array(3).fill("meatball");
-
 // The hop into the band starts on the counter, this far left of the fork, and peaks this high.
 const HOP_START_OFFSET = 56;
 const HOP_HEIGHT = 40;
-
-// A hard-coded test fort on the 16 px grid, until levels come from data.
-const TEST_FORT: BlockSpec[] = [
-  box("castIron", 592, -48, 32, 96),
-  box("wood", 672, -48, 16, 96),
-  box("castIron", 752, -48, 32, 96),
-  box("wood", 672, -104, 224, 16),
-  box("glass", 608, -144, 32, 64),
-  box("glass", 736, -144, 32, 64),
-  box("glass", 672, -184, 160, 16),
-  box("wood", 672, -224, 16, 64),
-  box("wood", 672, -264, 96, 16),
-  box("glass", 864, -32, 32, 64),
-  box("glass", 864, -72, 96, 16),
-  box("glass", 864, -112, 32, 64),
-];
-
-const TEST_ROACHES: { kind: RoachKind; position: Vec }[] = [
-  { kind: "roach", position: { x: 632, y: -16 } },
-  { kind: "roach", position: { x: 672, y: -128 } },
-  { kind: "roach", position: { x: 864, y: -160 } },
-];
-
-function box(
-  material: BlockSpec["material"],
-  x: number,
-  y: number,
-  width: number,
-  height: number,
-): BlockSpec {
-  return {
-    material,
-    shape: { type: "box", width, height },
-    position: { x, y },
-  };
-}
 
 export const OUTCOME = {
   playing: "playing",
@@ -89,14 +50,13 @@ export const OUTCOME = {
 export type Outcome = (typeof OUTCOME)[keyof typeof OUTCOME];
 
 export class GameScene implements Scene {
+  readonly level: LevelDef;
   world = new World();
   blocks: Block[] = [];
   roaches: Roach[] = [];
-  shot = new Shot(this.world, LAUNCHER_REST);
+  shot: Shot;
   outcome: Outcome = OUTCOME.playing;
-  private ground: Ground[] = [];
-  private launcher = new Launcher(LAUNCHER_REST);
-  private queue: IngredientKind[] = [];
+  queue: IngredientKind[] = [];
   // The ingredient in the band, then in flight until its shot settles.
   private loaded: Ingredient | null = null;
   private flying: Ingredient[] = [];
@@ -106,12 +66,17 @@ export class GameScene implements Scene {
   private shake = 0;
   private shakeOffset = ZERO;
   private preview: Vec[] = [];
+  private ground: Ground[] = [];
+  private launcher: Launcher;
   private ticks = 0;
   private slowmoFrames = 0;
   private readonly context: GameContext;
 
-  constructor(context: GameContext) {
+  constructor(context: GameContext, level: LevelDef) {
     this.context = context;
+    this.level = level;
+    this.shot = new Shot(this.world, level.launcher);
+    this.launcher = new Launcher(level.launcher);
   }
 
   get timeScale(): number {
@@ -166,23 +131,14 @@ export class GameScene implements Scene {
   // Throws the old world away and builds the level again from scratch.
   private start(): void {
     this.world = new World();
-    this.ground = [
-      new Ground(this.world, {
-        center: { x: 480, y: 32 },
-        width: 960,
-        height: 64,
-      }),
-    ];
-    this.blocks = TEST_FORT.map((spec) => new Block(this.world, spec));
-    this.roaches = TEST_ROACHES.map(
-      ({ kind, position }) => new Roach(this.world, kind, position),
-    );
-    this.destructibles = new Map(
-      [...this.blocks, ...this.roaches].map((target) => [target.body, target]),
-    );
-    this.launcher = new Launcher(LAUNCHER_REST);
-    this.shot = new Shot(this.world, LAUNCHER_REST);
-    this.queue = [...TEST_QUEUE];
+    const built = buildLevel(this.world, this.level);
+    this.ground = built.ground;
+    this.blocks = built.blocks;
+    this.roaches = built.roaches;
+    this.destructibles = built.destructibles;
+    this.launcher = new Launcher(this.level.launcher);
+    this.shot = new Shot(this.world, this.level.launcher);
+    this.queue = [...this.level.ingredients];
     this.flying = [];
     this.debris = new Debris(DEBRIS_SEED);
     this.shakeRandom = createRandom(DEBRIS_SEED);
@@ -212,7 +168,7 @@ export class GameScene implements Scene {
   private launch(pull: Vec, velocity: Vec): void {
     const ingredient = this.loaded;
     if (!ingredient) return;
-    ingredient.launch(sub(LAUNCHER_REST, pull), velocity);
+    ingredient.launch(sub(this.level.launcher, pull), velocity);
     this.flying.push(ingredient);
     this.loaded = null;
   }
@@ -244,12 +200,9 @@ export class GameScene implements Scene {
   }
 
   private applyImpacts(impacts: readonly Impact[]): void {
-    for (const impact of impacts) {
-      this.endFlightOnHit(impact);
-      if (this.ticks <= LEVEL_START_GRACE) continue;
-      this.damageSide(impact.a, impact.strength);
-      this.damageSide(impact.b, impact.strength);
-    }
+    for (const impact of impacts) this.endFlightOnHit(impact);
+    if (this.ticks > LEVEL_START_GRACE)
+      applyImpactDamage(impacts, this.destructibles);
     const largest = Math.max(0, ...impacts.map((impact) => impact.strength));
     this.addShake(largest);
   }
@@ -262,12 +215,6 @@ export class GameScene implements Scene {
       ingredient.land();
       this.shot.hit();
     }
-  }
-
-  // Ingredients and the counter aren't destructible, so only the other side takes damage.
-  private damageSide(body: BodyHandle, strength: number): void {
-    const target = this.destructibles.get(body);
-    target?.damage(damageFromImpact(strength, target.fragility));
   }
 
   private addShake(strength: number): void {
@@ -294,7 +241,7 @@ export class GameScene implements Scene {
     return (
       position.y > KILL_Y ||
       position.x < -KILL_MARGIN ||
-      position.x > LEVEL_WIDTH + KILL_MARGIN
+      position.x > this.level.width + KILL_MARGIN
     );
   }
 
@@ -352,16 +299,18 @@ export class GameScene implements Scene {
   // Along the hop while loading, then wherever the pull holds it.
   private bandPosition(): Vec {
     if (this.shot.state !== SHOT.loading)
-      return sub(LAUNCHER_REST, this.shot.pull);
+      return sub(this.level.launcher, this.shot.pull);
 
     const t = this.shot.loadProgress;
     const start = {
-      x: LAUNCHER_REST.x - HOP_START_OFFSET,
+      x: this.level.launcher.x - HOP_START_OFFSET,
       y: -this.loadedRadius(),
     };
     return {
-      x: lerp(start.x, LAUNCHER_REST.x, t),
-      y: lerp(start.y, LAUNCHER_REST.y, t) - Math.sin(t * Math.PI) * HOP_HEIGHT,
+      x: lerp(start.x, this.level.launcher.x, t),
+      y:
+        lerp(start.y, this.level.launcher.y, t) -
+        Math.sin(t * Math.PI) * HOP_HEIGHT,
     };
   }
 
@@ -381,7 +330,7 @@ export class GameScene implements Scene {
     }
     this.preview = this.world.predictFlight(
       ingredient.bodyDef(
-        sub(LAUNCHER_REST, this.shot.pull),
+        sub(this.level.launcher, this.shot.pull),
         this.shot.aimVelocity,
       ),
       PREVIEW_DOTS * PREVIEW_DOT_SPACING,
