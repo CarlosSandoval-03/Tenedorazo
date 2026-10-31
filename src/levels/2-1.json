@@ -1,0 +1,117 @@
+{
+  "id": "2-1",
+  "width": 960,
+  "launcher": {
+    "x": 160,
+    "y": -96
+  },
+  "ingredients": ["peaPod", "peaPod", "meatball"],
+  "stars": [3500, 5500],
+  "ground": [
+    {
+      "x": 480,
+      "y": 32,
+      "width": 960,
+      "height": 64
+    }
+  ],
+  "blocks": [
+    {
+      "shape": "box",
+      "material": "glass",
+      "x": 600,
+      "y": -32,
+      "width": 32,
+      "height": 64
+    },
+    {
+      "shape": "box",
+      "material": "glass",
+      "x": 600,
+      "y": -72,
+      "width": 96,
+      "height": 16
+    },
+    {
+      "shape": "box",
+      "material": "glass",
+      "x": 600,
+      "y": -112,
+      "width": 32,
+      "height": 64
+    },
+    {
+      "shape": "box",
+      "material": "glass",
+      "x": 600,
+      "y": -152,
+      "width": 96,
+      "height": 16
+    },
+    {
+      "shape": "box",
+      "material": "glass",
+      "x": 760,
+      "y": -32,
+      "width": 32,
+      "height": 64
+    },
+    {
+      "shape": "box",
+      "material": "glass",
+      "x": 760,
+      "y": -72,
+      "width": 96,
+      "height": 16
+    },
+    {
+      "shape": "box",
+      "material": "glass",
+      "x": 760,
+      "y": -112,
+      "width": 32,
+      "height": 64
+    },
+    {
+      "shape": "box",
+      "material": "glass",
+      "x": 760,
+      "y": -152,
+      "width": 96,
+      "height": 16
+    },
+    {
+      "shape": "box",
+      "material": "glass",
+      "x": 880,
+      "y": -32,
+      "width": 32,
+      "height": 64
+    },
+    {
+      "shape": "box",
+      "material": "glass",
+      "x": 880,
+      "y": -72,
+      "width": 96,
+      "height": 16
+    }
+  ],
+  "roaches": [
+    {
+      "kind": "roach",
+      "x": 600,
+      "y": -176
+    },
+    {
+      "kind": "roach",
+      "x": 760,
+      "y": -176
+    },
+    {
+      "kind": "roach",
+      "x": 880,
+      "y": -96
+    }
+  ]
+}

@@ -1,0 +1,90 @@
+{
+  "id": "4-1",
+  "width": 960,
+  "launcher": {
+    "x": 160,
+    "y": -96
+  },
+  "ingredients": ["cheese", "cheese", "chili"],
+  "stars": [5500, 7500],
+  "ground": [
+    {
+      "x": 480,
+      "y": 32,
+      "width": 960,
+      "height": 64
+    }
+  ],
+  "blocks": [
+    {
+      "shape": "box",
+      "material": "jelly",
+      "x": 592,
+      "y": -32,
+      "width": 64,
+      "height": 64
+    },
+    {
+      "shape": "box",
+      "material": "jelly",
+      "x": 592,
+      "y": -96,
+      "width": 64,
+      "height": 64
+    },
+    {
+      "shape": "box",
+      "material": "wood",
+      "x": 720,
+      "y": -32,
+      "width": 16,
+      "height": 64
+    },
+    {
+      "shape": "box",
+      "material": "wood",
+      "x": 816,
+      "y": -32,
+      "width": 16,
+      "height": 64
+    },
+    {
+      "shape": "box",
+      "material": "wood",
+      "x": 768,
+      "y": -72,
+      "width": 128,
+      "height": 16
+    },
+    {
+      "shape": "box",
+      "material": "jelly",
+      "x": 880,
+      "y": -32,
+      "width": 64,
+      "height": 64
+    }
+  ],
+  "roaches": [
+    {
+      "kind": "roach",
+      "x": 672,
+      "y": -16
+    },
+    {
+      "kind": "roach",
+      "x": 768,
+      "y": -16
+    },
+    {
+      "kind": "colander",
+      "x": 768,
+      "y": -96
+    },
+    {
+      "kind": "roach",
+      "x": 880,
+      "y": -80
+    }
+  ]
+}

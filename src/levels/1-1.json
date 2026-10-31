@@ -1,0 +1,85 @@
+{
+  "id": "1-1",
+  "width": 960,
+  "launcher": {
+    "x": 160,
+    "y": -96
+  },
+  "ingredients": ["meatball", "meatball", "meatball"],
+  "stars": [3000, 5500],
+  "ground": [
+    {
+      "x": 480,
+      "y": 32,
+      "width": 960,
+      "height": 64
+    }
+  ],
+  "blocks": [
+    {
+      "shape": "box",
+      "material": "wood",
+      "x": 640,
+      "y": -48,
+      "width": 16,
+      "height": 96
+    },
+    {
+      "shape": "box",
+      "material": "wood",
+      "x": 736,
+      "y": -48,
+      "width": 16,
+      "height": 96
+    },
+    {
+      "shape": "box",
+      "material": "wood",
+      "x": 688,
+      "y": -104,
+      "width": 128,
+      "height": 16
+    },
+    {
+      "shape": "box",
+      "material": "glass",
+      "x": 688,
+      "y": -144,
+      "width": 32,
+      "height": 64
+    },
+    {
+      "shape": "box",
+      "material": "glass",
+      "x": 840,
+      "y": -32,
+      "width": 32,
+      "height": 64
+    },
+    {
+      "shape": "box",
+      "material": "glass",
+      "x": 840,
+      "y": -72,
+      "width": 96,
+      "height": 16
+    }
+  ],
+  "roaches": [
+    {
+      "kind": "roach",
+      "x": 688,
+      "y": -16
+    },
+    {
+      "kind": "roach",
+      "x": 640,
+      "y": -128
+    },
+    {
+      "kind": "roach",
+      "x": 840,
+      "y": -96
+    }
+  ]
+}

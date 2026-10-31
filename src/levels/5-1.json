@@ -1,0 +1,109 @@
+{
+  "id": "5-1",
+  "width": 960,
+  "launcher": {
+    "x": 160,
+    "y": -96
+  },
+  "ingredients": ["popcorn", "popcorn", "chili", "cheese"],
+  "stars": [13500, 16000],
+  "ground": [
+    {
+      "x": 480,
+      "y": 32,
+      "width": 960,
+      "height": 64
+    }
+  ],
+  "blocks": [
+    {
+      "shape": "box",
+      "material": "castIron",
+      "x": 608,
+      "y": -64,
+      "width": 32,
+      "height": 128
+    },
+    {
+      "shape": "box",
+      "material": "castIron",
+      "x": 832,
+      "y": -64,
+      "width": 32,
+      "height": 128
+    },
+    {
+      "shape": "box",
+      "material": "wood",
+      "x": 720,
+      "y": -136,
+      "width": 256,
+      "height": 16
+    },
+    {
+      "shape": "circle",
+      "material": "pressureCooker",
+      "x": 656,
+      "y": -24,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "shape": "circle",
+      "material": "pressureCooker",
+      "x": 784,
+      "y": -24,
+      "width": 48,
+      "height": 48
+    },
+    {
+      "shape": "box",
+      "material": "glass",
+      "x": 640,
+      "y": -176,
+      "width": 32,
+      "height": 64
+    },
+    {
+      "shape": "box",
+      "material": "glass",
+      "x": 800,
+      "y": -176,
+      "width": 32,
+      "height": 64
+    },
+    {
+      "shape": "box",
+      "material": "glass",
+      "x": 720,
+      "y": -216,
+      "width": 192,
+      "height": 16
+    },
+    {
+      "shape": "circle",
+      "material": "pressureCooker",
+      "x": 720,
+      "y": -168,
+      "width": 48,
+      "height": 48
+    }
+  ],
+  "roaches": [
+    {
+      "kind": "queen",
+      "x": 720,
+      "y": -32
+    },
+    {
+      "kind": "capped",
+      "x": 720,
+      "y": -240
+    },
+    {
+      "kind": "roach",
+      "x": 544,
+      "y": -16
+    }
+  ]
+}

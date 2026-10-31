@@ -1,0 +1,20 @@
+html,
+body {
+  height: 100%;
+  margin: 0;
+}
+
+/* The page is the dark kitchen around the game, so the canvas is always the brightest thing on it. */
+body {
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  background: #0b1418;
+}
+
+#game canvas {
+  display: block;
+  border-radius: 8px;
+  box-shadow: 0 24px 64px rgb(0 0 0 / 0.6);
+  touch-action: none;
+}

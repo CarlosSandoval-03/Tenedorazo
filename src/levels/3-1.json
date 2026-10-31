@@ -1,0 +1,77 @@
+{
+  "id": "3-1",
+  "width": 960,
+  "launcher": {
+    "x": 160,
+    "y": -96
+  },
+  "ingredients": ["chili", "chili", "chili"],
+  "stars": [4000, 7000],
+  "ground": [
+    {
+      "x": 480,
+      "y": 32,
+      "width": 960,
+      "height": 64
+    }
+  ],
+  "blocks": [
+    {
+      "shape": "box",
+      "material": "castIron",
+      "x": 640,
+      "y": -48,
+      "width": 32,
+      "height": 96
+    },
+    {
+      "shape": "box",
+      "material": "castIron",
+      "x": 768,
+      "y": -48,
+      "width": 32,
+      "height": 96
+    },
+    {
+      "shape": "box",
+      "material": "wood",
+      "x": 704,
+      "y": -104,
+      "width": 160,
+      "height": 16
+    },
+    {
+      "shape": "box",
+      "material": "castIron",
+      "x": 704,
+      "y": -128,
+      "width": 64,
+      "height": 32
+    },
+    {
+      "shape": "box",
+      "material": "wood",
+      "x": 848,
+      "y": -32,
+      "width": 16,
+      "height": 64
+    }
+  ],
+  "roaches": [
+    {
+      "kind": "roach",
+      "x": 704,
+      "y": -16
+    },
+    {
+      "kind": "capped",
+      "x": 704,
+      "y": -160
+    },
+    {
+      "kind": "roach",
+      "x": 888,
+      "y": -16
+    }
+  ]
+}
