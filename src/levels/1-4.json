@@ -1,0 +1,128 @@
+{
+  "id": "1-4",
+  "width": 1600,
+  "launcher": {
+    "x": 160,
+    "y": -96
+  },
+  "ingredients": ["meatball", "meatball", "meatball", "meatball"],
+  "stars": [4600, 6800],
+  "ground": [
+    {
+      "x": 800,
+      "y": 32,
+      "width": 1600,
+      "height": 64
+    },
+    {
+      "x": 1000,
+      "y": -48,
+      "width": 192,
+      "height": 96
+    }
+  ],
+  "blocks": [
+    {
+      "shape": "box",
+      "material": "glass",
+      "x": 720,
+      "y": -32,
+      "width": 16,
+      "height": 64
+    },
+    {
+      "shape": "box",
+      "material": "glass",
+      "x": 944,
+      "y": -128,
+      "width": 16,
+      "height": 64
+    },
+    {
+      "shape": "box",
+      "material": "glass",
+      "x": 1056,
+      "y": -128,
+      "width": 16,
+      "height": 64
+    },
+    {
+      "shape": "box",
+      "material": "wood",
+      "x": 1000,
+      "y": -168,
+      "width": 128,
+      "height": 16
+    },
+    {
+      "shape": "box",
+      "material": "glass",
+      "x": 1000,
+      "y": -208,
+      "width": 32,
+      "height": 64
+    },
+    {
+      "shape": "box",
+      "material": "glass",
+      "x": 1268,
+      "y": -32,
+      "width": 32,
+      "height": 64
+    },
+    {
+      "shape": "box",
+      "material": "glass",
+      "x": 1332,
+      "y": -32,
+      "width": 32,
+      "height": 64
+    },
+    {
+      "shape": "box",
+      "material": "glass",
+      "x": 1300,
+      "y": -72,
+      "width": 128,
+      "height": 16
+    },
+    {
+      "shape": "box",
+      "material": "glass",
+      "x": 1300,
+      "y": -112,
+      "width": 32,
+      "height": 64
+    },
+    {
+      "shape": "box",
+      "material": "glass",
+      "x": 1300,
+      "y": -152,
+      "width": 96,
+      "height": 16
+    }
+  ],
+  "roaches": [
+    {
+      "kind": "roach",
+      "x": 752,
+      "y": -16
+    },
+    {
+      "kind": "roach",
+      "x": 1000,
+      "y": -112
+    },
+    {
+      "kind": "roach",
+      "x": 968,
+      "y": -192
+    },
+    {
+      "kind": "roach",
+      "x": 1300,
+      "y": -176
+    }
+  ]
+}

@@ -6,6 +6,9 @@ import {
   type LevelPoint,
 } from "../types";
 import level1x1 from "./1-1.json";
+import level1x2 from "./1-2.json";
+import level1x3 from "./1-3.json";
+import level1x4 from "./1-4.json";
 import level2x1 from "./2-1.json";
 import level3x1 from "./3-1.json";
 import level4x1 from "./4-1.json";
@@ -32,6 +35,9 @@ interface RawLevel {
 // In play order.
 export const LEVELS: readonly LevelDef[] = [
   level1x1,
+  level1x2,
+  level1x3,
+  level1x4,
   level2x1,
   level3x1,
   level4x1,

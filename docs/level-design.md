@@ -85,6 +85,17 @@ Five levels, `1-1.json` to `5-1.json`, one per place. Each is 960 px wide (one s
 
 Each level was checked winnable with one ingredient to spare by a search over simulated shots (angles, pulls, and ability timings). The hat thresholds were set from the MVP's score values ([implementation-plan.md › Step 6](implementation-plan.md#step-6-the-run-070--mvp)): 2 hats for the roaches and half of the fort, 3 hats for the roaches, most of the fort, and one ingredient to spare.
 
+## The counter's curve
+
+The first place with all four levels. Only meatballs, glass, and wood; each is wider than one screen except the first. Each was checked winnable with one meatball to spare by the shot search, and its hats follow the same rule as the MVP's.
+
+| Level | Width | Queue | The fort | Roaches |
+| ----- | ----- | ----- | -------- | ------- |
+| 1-1 | 960 | 3 meatballs | A wooden table with a glass on top; a glass with a plate beside it | 3 |
+| 1-2 | 1440 | 4 meatballs | A three-storey tower of glasses and boards; a glass hut behind it | 4 |
+| 1-3 | 1440 | 4 meatballs | A wooden table with a glass on top; a roach behind a glass wall; a two-storey glass tower | 4 |
+| 1-4 | 1600 | 4 meatballs | A glass-legged hut on a raised shelf; a walled roach before it; a glass tower beyond | 4 |
+
 ## Readability
 
 - A level is at most about 1600 px wide: the fastest launch reaches about 1400 px past the fork. Wider levels open with the camera on the fort and pan back to the fork.
