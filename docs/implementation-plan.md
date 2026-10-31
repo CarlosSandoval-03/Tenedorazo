@@ -19,6 +19,7 @@ Every step ends with something playable and a version bump ([technical.md › Gi
 | 7 | Visible hats: the hat bar in the HUD, the score breakdown in the Result | `0.8.0` | Done |
 | 8 | Camera: levels wider than one screen, the opening pan, following the flight, pan and zoom | `0.9.0` | Next |
 | 9 | The counter in full: the Place select and levels 1-2 to 1-4 | `0.10.0` | — |
+| 10 | Look: a night kitchen per place with parallax, richer materials, ingredients, and roaches | `0.11.0` | — |
 
 ---
 
@@ -347,12 +348,31 @@ class World {
 
 ---
 
+## Step 10: Look (`0.11.0`)
+
+**Goal:** the scenes and the things in them read as a kitchen at night, still drawn by p5 ([art-direction.md](art-direction.md)); no image files, and no AI-made assets.
+
+### Files
+
+| File | In this step |
+| ---- | ------------ |
+| `ui/Kitchen.ts` → `ui/backdrops/` | A backdrop per place, in two parallax layers behind the level: a far wall (tiles, a window with the night outside, the fridge's light or the stove's pilot flame) and a near layer of that place's furniture (the dish rack and tap, the stove's knobs, the fridge's shelves, the pantry's jars). Low contrast, never a material's or a roach's hue. |
+| `entities/blockLooks.ts` | One highlight per shape and a cleaner silhouette per material: glass rims, wood end grain, a cast-iron handle, the cooker's lid and handles; damage that reads on each. |
+| `entities/ingredientLooks.ts`, `entities/Roach.ts` | Shading and expressions: blinking eyes, the roaches' idle twitch, squash and stretch at launch and on the first hit. |
+| `entities/Launcher.ts` | A fork that reads as a fork: tines, a curved neck, a handle. |
+
+### Done when
+- [ ] A screenshot of each place tells which place it is without the HUD.
+- [ ] Every material still reads at a glance in grayscale ([art-direction.md › Readability rules](art-direction.md#readability-rules)).
+
+---
+
 ## After the MVP
 
 Not planned yet. Each one becomes a step when the one before is done, in the order that serves the game.
 
 - **More levels:** the other places' curves, up to four levels each, as in step 9.
-- **Look:** the night kitchen background, illustrations for the Title, the Intros, and the Ending.
+- **Illustrations:** the Title, the Intros, and the Ending.
 - **Sound:** every sound in [art-direction.md › Sound](art-direction.md#sound).
 - **Keyboard aiming:** arrows for angle and pull.
 - **A level editor** behind `?debug=true`, if hand-writing levels gets slow.
@@ -389,3 +409,4 @@ Not planned yet. Each one becomes a step when the one before is done, in the ord
 | 24 | The hat thresholds stay per level, and are shown: a hat bar while playing, a breakdown in the Result | 7 | Confirmed |
 | 25 | Levels can be wider than one screen, with a camera (replaces 6 from step 8 on) | 8 | Confirmed |
 | 26 | More levels one place at a time, the counter first, with a Place select | 9 | Confirmed |
+| 27 | Better looks still drawn by p5, a backdrop per place with parallax | 10 | Confirmed |
