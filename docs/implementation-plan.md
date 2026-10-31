@@ -221,12 +221,13 @@ class World {
 
 | File | In this step |
 | ---- | ------------ |
-| `entities/Ingredient.ts` | The four abilities, one method each, picked by kind. |
+| `entities/Ingredient.ts`, `entities/ingredientLooks.ts` | The four abilities, one method each, picked by kind; the pea is an ingredient kind without one. Each ingredient's look, with eyes. |
 | `physics/World.ts` | `addVelocity(body, dv)`, `setAngularVelocity(body, w)`, `applyImpulse(body, impulse)`, `dynamicBodies()`. |
 | `physics/blast.ts` (+ test) | `blastFalloff(distance, radius)`. |
 | `systems/Blasts.ts` (+ test) | The blast queue: blasts requested in a step run after it; a pressure cooker destroyed by a blast queues its own for the next step. The test chains three cookers. |
 | `entities/Block.ts` | Jelly: no hp, its wobble; pressure cooker: queues a blast when destroyed. |
 | `entities/Roach.ts` | Capped, colander, and Queen looks. |
+| `ui/HUD.ts`, `i18n/` | The one-line hint the first time a place's new ingredient loads. |
 | `config.ts` | `PEA_COUNT`, `PEA_SPREAD`, `CHILI_BOOST`, `CHEESE_SPIN`, `POP_RADIUS`, `POP_STRENGTH`, `COOKER_BLAST_RADIUS`, `COOKER_BLAST_STRENGTH`, jelly and cooker in `MATERIALS`, the armored roaches and the Queen in `ROACHES`. |
 | `debug/` | `&ingredients=popcorn,cheese` replaces a level's queue. |
 

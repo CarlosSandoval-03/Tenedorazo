@@ -42,8 +42,8 @@ fork-and-fling/
     ├── i18n/             # en.ts, es.ts, index.ts (detection, t())
     ├── core/             # Scene, SceneManager, Input, display, drawing, math, random, storage (theme-agnostic)
     ├── physics/          # World, BodyHandle, damage, blast; the only folder that imports Matter.js
-    ├── entities/         # Entity, Destructible, Block (+ looks), Ground, Roach, Ingredient (+ kinds), Launcher
-    ├── systems/          # Shot, Scoring, Blasts, Debris
+    ├── entities/         # Entity, Destructible, Block (+ looks), Ground, Roach, Ingredient (+ looks), Launcher
+    ├── systems/          # Shot, impactDamage, Scoring, Blasts, Debris
     ├── levels/           # *.json level files, index, buildLevel, validateLevel
     ├── ui/               # Kitchen (background), HUD, AimPreview, Banner, FloatingNumbers, Button, PauseMenu
     ├── scenes/           # Title, LevelSelect, Game, Result, Ending

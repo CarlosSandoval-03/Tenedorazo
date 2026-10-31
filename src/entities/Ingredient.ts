@@ -1,21 +1,38 @@
 import type p5 from "p5";
-import { INGREDIENTS, LANDED_FRICTION_AIR, PALETTE } from "../config";
+import {
+  CHEESE_SPIN,
+  CHILI_BOOST,
+  INGREDIENTS,
+  LANDED_FRICTION_AIR,
+  PEA_COUNT,
+  PEA_SPREAD,
+  POP_BLAST,
+} from "../config";
 import { drawInPose } from "../core/drawing";
-import type { Vec } from "../core/math";
+import { add, normalize, rotate, scale, type Vec } from "../core/math";
 import type { BodyDef, BodyHandle, World } from "../physics/World";
-import { drawSilhouette } from "./blockLooks";
-import type { IngredientKind } from "../types";
+import type { Blast } from "../systems/Blasts";
+import type { ProjectileKind } from "../types";
 import { Entity } from "./Entity";
+import { drawIngredientLook } from "./ingredientLooks";
 
-const OUTLINE_WEIGHT = 3;
+// The split peas start side by side, this far apart, so they never overlap.
+const PEA_GAP = 16;
 
-// A pantry ingredient. It has no body while it waits or sits in the band; the launch creates one.
+// What an ability can do beyond its own body: add projectiles, set off a blast.
+export interface AbilityEffects {
+  spawn(projectile: Ingredient): void;
+  blast(blast: Blast): void;
+}
+
+// A pantry ingredient, or a pea. It has no body while it waits or sits in the band; the launch
+// creates one.
 export class Ingredient extends Entity {
-  readonly kind: IngredientKind;
+  readonly kind: ProjectileKind;
   body: BodyHandle | null = null;
   private readonly world: World;
 
-  constructor(world: World, kind: IngredientKind) {
+  constructor(world: World, kind: ProjectileKind) {
     super();
     this.world = world;
     this.kind = kind;
@@ -39,6 +56,25 @@ export class Ingredient extends Entity {
     };
   }
 
+  // Once per flight, between ticks. Each does what the real food would.
+  useAbility(effects: AbilityEffects): void {
+    const body = this.body;
+    if (!body) return;
+    switch (this.kind) {
+      case "peaPod":
+        return this.splitPod(body, effects);
+      case "chili":
+        return this.boostChili(body);
+      case "cheese":
+        return this.spinCheese(body);
+      case "popcorn":
+        return this.popKernel(body, effects);
+      case "meatball":
+      case "pea":
+        return;
+    }
+  }
+
   // The flight is over: from now on it rolls to a stop instead of forever.
   land(): void {
     if (this.body) this.world.setFrictionAir(this.body, LANDED_FRICTION_AIR);
@@ -58,13 +94,36 @@ export class Ingredient extends Entity {
   drawAt(p: p5, position: Vec, angle: number): void {
     drawInPose(p, position, angle, () => drawIngredientLook(p, this.kind));
   }
-}
 
-// Centered on the origin; the HUD draws its icons with it too.
-export function drawIngredientLook(p: p5, kind: IngredientKind): void {
-  p.rectMode(p.CENTER);
-  p.stroke(PALETTE.ingredients.outline);
-  p.strokeWeight(OUTLINE_WEIGHT);
-  p.fill(PALETTE.ingredients[kind]);
-  drawSilhouette(p, INGREDIENTS[kind].shape);
+  // The siblings split up: the pod is replaced by peas fanned around its heading.
+  private splitPod(body: BodyHandle, effects: AbilityEffects): void {
+    const position = this.world.position(body);
+    const velocity = this.world.velocity(body);
+    const across = normalize({ x: -velocity.y, y: velocity.x });
+    this.remove();
+
+    for (let i = 0; i < PEA_COUNT; i++) {
+      const offset = i - (PEA_COUNT - 1) / 2;
+      const pea = new Ingredient(this.world, "pea");
+      pea.launch(
+        add(position, scale(across, offset * PEA_GAP)),
+        rotate(velocity, offset * PEA_SPREAD),
+      );
+      effects.spawn(pea);
+    }
+  }
+
+  private boostChili(body: BodyHandle): void {
+    const heading = normalize(this.world.velocity(body));
+    this.world.addVelocity(body, scale(heading, CHILI_BOOST));
+  }
+
+  private spinCheese(body: BodyHandle): void {
+    this.world.setAngularVelocity(body, CHEESE_SPIN);
+  }
+
+  private popKernel(body: BodyHandle, effects: AbilityEffects): void {
+    effects.blast({ ...POP_BLAST, at: this.world.position(body) });
+    this.remove();
+  }
 }

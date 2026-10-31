@@ -29,12 +29,18 @@ import { t } from "../i18n";
 import { buildLevel } from "../levels/buildLevel";
 import { World, type BodyHandle, type Impact } from "../physics/World";
 import { DEBRIS_LOOKS, Debris, type DebrisLook } from "../systems/Debris";
+import { Blasts } from "../systems/Blasts";
 import { SHOT, Shot, type ShotEvent, type ShotInput } from "../systems/Shot";
 import { applyImpactDamage } from "../systems/impactDamage";
-import type { IngredientKind, LevelDef } from "../types";
+import {
+  INGREDIENT_KINDS,
+  type IngredientKind,
+  type LevelDef,
+  type ProjectileKind,
+} from "../types";
 import { drawAimPreview } from "../ui/AimPreview";
 import { drawBanner } from "../ui/Banner";
-import { drawHUD } from "../ui/HUD";
+import { drawHint, drawHUD } from "../ui/HUD";
 import { drawKitchen } from "../ui/Kitchen";
 import type { GameContext } from "./GameContext";
 
@@ -62,6 +68,7 @@ export class GameScene implements Scene {
   private flying: Ingredient[] = [];
   private destructibles = new Map<BodyHandle, Destructible>();
   private debris = new Debris(DEBRIS_SEED);
+  private blasts = new Blasts();
   private shakeRandom = createRandom(DEBRIS_SEED);
   private shake = 0;
   private shakeOffset = ZERO;
@@ -70,6 +77,9 @@ export class GameScene implements Scene {
   private launcher: Launcher;
   private ticks = 0;
   private slowmoFrames = 0;
+  // The place's new ingredient, while its hint shows; the hint shows once per attempt.
+  private hintFor: IngredientKind | null = null;
+  private wasHintShown = false;
   private readonly context: GameContext;
 
   constructor(context: GameContext, level: LevelDef) {
@@ -99,6 +109,7 @@ export class GameScene implements Scene {
     this.world.step();
     this.ticks++;
     this.applyImpacts(this.world.takeImpacts());
+    this.runBlasts();
     this.removeOutOfBounds();
     this.removeDestroyed();
 
@@ -123,6 +134,7 @@ export class GameScene implements Scene {
     p.pop();
 
     drawHUD(p, this.ingredientsLeft());
+    if (this.hintFor) drawHint(p, t(`hints.${this.hintFor}`));
     this.drawOutcome(p);
   }
 
@@ -141,10 +153,13 @@ export class GameScene implements Scene {
     this.queue = [...this.level.ingredients];
     this.flying = [];
     this.debris = new Debris(DEBRIS_SEED);
+    this.blasts = new Blasts();
     this.shakeRandom = createRandom(DEBRIS_SEED);
     this.shake = 0;
     this.ticks = 0;
     this.slowmoFrames = 0;
+    this.hintFor = null;
+    this.wasHintShown = false;
     this.outcome = OUTCOME.playing;
     this.loadNext();
   }
@@ -162,7 +177,17 @@ export class GameScene implements Scene {
 
   private handleShotEvent(event: ShotEvent | undefined): void {
     if (event?.type === "launch") this.launch(event.pull, event.velocity);
+    if (event?.type === "ability") this.useAbility();
     if (event?.type === "settled") this.endShot();
+  }
+
+  // Only the launched ingredient is in flight when its ability fires.
+  private useAbility(): void {
+    this.flying[0]?.useAbility({
+      spawn: (projectile) => this.flying.push(projectile),
+      blast: (blast) => this.blasts.request(blast),
+    });
+    this.flying = this.flying.filter((ingredient) => ingredient.alive);
   }
 
   private launch(pull: Vec, velocity: Vec): void {
@@ -184,10 +209,20 @@ export class GameScene implements Scene {
 
   private loadNext(): boolean {
     const kind = this.queue.shift();
+    this.hintFor = null;
     if (!kind) return false;
     this.loaded = new Ingredient(this.world, kind);
     this.shot.load();
+    this.showHintFor(kind);
     return true;
+  }
+
+  // Place n brings the n-th ingredient, the one its levels teach.
+  private showHintFor(kind: IngredientKind): void {
+    const place = Number.parseInt(this.level.id, 10);
+    if (this.wasHintShown || kind !== INGREDIENT_KINDS[place - 1]) return;
+    this.hintFor = kind;
+    this.wasHintShown = true;
   }
 
   private removeIngredient(ingredient: Ingredient): void {
@@ -246,28 +281,39 @@ export class GameScene implements Scene {
   }
 
   // Bodies at 0 hp leave the world only now, after the step, never inside it.
+  // A destroyed pressure cooker queues its blast for the next tick.
   private removeDestroyed(): void {
     const hadRoaches = this.roaches.length > 0;
-    this.blocks = this.prune(
-      this.blocks,
-      (block) => DEBRIS_LOOKS[block.material],
-    );
+    this.blocks = this.prune(this.blocks, (block) => {
+      const blast = block.blastOnDestroy();
+      if (blast) this.blasts.request(blast);
+      return DEBRIS_LOOKS[block.material];
+    });
     this.roaches = this.prune(this.roaches, () => DEBRIS_LOOKS.roach);
     if (hadRoaches && this.roaches.length === 0)
       this.slowmoFrames = FINAL_SLOWMO_FRAMES;
   }
 
+  // onDestroyed runs while the body is still in the world, and returns its debris.
   private prune<T extends Destructible>(
     targets: T[],
-    lookOf: (target: T) => DebrisLook,
+    onDestroyed: (target: T) => DebrisLook,
   ): T[] {
     for (const target of targets) {
       if (target.alive) continue;
-      this.debris.burst(this.world.position(target.body), lookOf(target));
+      const look = onDestroyed(target);
+      this.debris.burst(this.world.position(target.body), look);
       this.world.remove(target.body);
       this.destructibles.delete(target.body);
     }
     return targets.filter((target) => target.alive);
+  }
+
+  private runBlasts(): void {
+    for (const blast of this.blasts.run(this.world, this.destructibles)) {
+      this.debris.burst(blast.at, DEBRIS_LOOKS.blast);
+      this.addShake(blast.strength);
+    }
   }
 
   private updateEffects(): void {
@@ -337,7 +383,7 @@ export class GameScene implements Scene {
     );
   }
 
-  private ingredientsLeft(): IngredientKind[] {
+  private ingredientsLeft(): ProjectileKind[] {
     return this.loaded ? [this.loaded.kind, ...this.queue] : [...this.queue];
   }
 
