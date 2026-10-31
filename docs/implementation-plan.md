@@ -11,8 +11,8 @@ Every step ends with something playable and a version bump ([technical.md › Gi
 | 0 | Scaffold: Vite, TypeScript, p5, Matter.js, hooks, CI and deploy; a box falling on a floor | `0.1.0` | Done |
 | 1 | Physics sandbox: `World`, the fixed tick, a fort that stands still, debug draw | `0.2.0` | Done |
 | 2 | The shot: the fork, pull, aim preview, launch, settle, the meatball | `0.3.0` | Done |
-| 3 | Damage: impulses to hp, damage states, roaches, win and lose, restart, HUD | `0.4.0` | Next |
-| 4 | Levels as data: loader, validation, the self-collapse test, level 1-1 from JSON | `0.5.0` | — |
+| 3 | Damage: impulses to hp, damage states, roaches, win and lose, restart, HUD | `0.4.0` | Done |
+| 4 | Levels as data: loader, validation, the self-collapse test, level 1-1 from JSON | `0.5.0` | Next |
 | 5 | Abilities and kitchen materials: the other four ingredients, jelly, pressure cookers, armored roaches and the Queen; levels 2-1 to 5-1 | `0.6.0` | — |
 | 6 | The run: Title, Level select, Result, Ending, score and hats, saved progress, pause | `0.7.0` | — |
 | — | **MVP**: the five levels playable from the Title to the Ending, deployed | `0.7.0` | — |
