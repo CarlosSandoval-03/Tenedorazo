@@ -9,7 +9,7 @@ class Target extends Destructible {
 }
 
 function target(hp = 100): Target {
-  return new Target(new BodyHandle(), { hp, fragility: 1 });
+  return new Target(new BodyHandle(), { hp, fragility: 1, score: 0 });
 }
 
 describe("Destructible", () => {

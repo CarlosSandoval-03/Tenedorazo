@@ -12,6 +12,8 @@ export type DamageState = (typeof DAMAGE_STATE)[keyof typeof DAMAGE_STATE];
 export interface Toughness {
   readonly hp: number;
   readonly fragility: number;
+  // Scored when it is destroyed.
+  readonly score: number;
 }
 
 // Anything with a body that impacts can break: blocks and roaches.
@@ -19,6 +21,7 @@ export abstract class Destructible extends Entity {
   readonly body: BodyHandle;
   readonly maxHp: number;
   readonly fragility: number;
+  readonly score: number;
   hp: number;
   // Ticks since the last hit that did damage; drives the flash and the jelly's wobble.
   ticksSinceHit = Infinity;
@@ -29,6 +32,7 @@ export abstract class Destructible extends Entity {
     this.maxHp = toughness.hp;
     this.hp = toughness.hp;
     this.fragility = toughness.fragility;
+    this.score = toughness.score;
   }
 
   get isFlashing(): boolean {
