@@ -46,6 +46,11 @@ export function clampLength(v: Vec, max: number): Vec {
   return size <= max ? v : scale(v, max / size);
 }
 
+// The pull points from the dragged ingredient back to the band's rest: the way it flies.
+export function launchVelocity(pull: Vec, launchSpeed: number): Vec {
+  return scale(pull, launchSpeed);
+}
+
 export function clamp(value: number, min: number, max: number): number {
   return Math.min(max, Math.max(min, value));
 }
