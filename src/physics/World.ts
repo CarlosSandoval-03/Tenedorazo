@@ -33,6 +33,14 @@ export interface BodyDef {
   frictionAir?: number;
 }
 
+// A new contact's strength: the closing speed along the normal times the pair's reduced mass.
+export interface Impact {
+  readonly a: BodyHandle;
+  readonly b: BodyHandle;
+  readonly strength: number;
+  readonly point: Vec;
+}
+
 // Opaque: the rest of the game keeps and compares handles, and only World opens them.
 export class BodyHandle {
   declare private readonly brand: never;
@@ -47,11 +55,22 @@ const SUBSTEP_MS = TICK_MS / SUBSTEPS;
 export class World {
   private readonly engine = createEngine();
   private readonly bodies = new Map<BodyHandle, Matter.Body>();
+  private readonly handlesById = new Map<number, BodyHandle>();
+  // The largest impact of each pair in the current tick, by pair id.
+  private readonly impacts = new Map<string, Impact>();
+
+  constructor() {
+    // collisionStart fires before the solver, while the bodies still have their incoming velocities.
+    Matter.Events.on(this.engine, "collisionStart", (event) => {
+      for (const pair of event.pairs) this.recordImpact(pair);
+    });
+  }
 
   createBody(def: BodyDef): BodyHandle {
     const body = createMatterBody(def);
     const handle = new BodyHandle();
     this.bodies.set(handle, body);
+    this.handlesById.set(body.id, handle);
     Matter.Composite.add(this.engine.world, body);
     return handle;
   }
@@ -61,6 +80,7 @@ export class World {
     if (!body) return;
     Matter.Composite.remove(this.engine.world, body);
     this.bodies.delete(handle);
+    this.handlesById.delete(body.id);
   }
 
   has(handle: BodyHandle): boolean {
@@ -69,8 +89,29 @@ export class World {
 
   // One 1/60 s tick, as SUBSTEPS equal updates.
   step(): void {
-    for (let i = 0; i < SUBSTEPS; i++)
-      Matter.Engine.update(this.engine, SUBSTEP_MS);
+    this.impacts.clear();
+    stepEngine(this.engine);
+  }
+
+  // The impacts of the last tick, handed over once.
+  takeImpacts(): Impact[] {
+    const impacts = [...this.impacts.values()];
+    this.impacts.clear();
+    return impacts;
+  }
+
+  // The engine's own flight of a body alone in an empty world: one position per tick.
+  predictFlight(def: BodyDef, ticks: number): Vec[] {
+    const engine = createEngine();
+    const body = createMatterBody(def);
+    Matter.Composite.add(engine.world, body);
+
+    const positions: Vec[] = [];
+    for (let i = 0; i < ticks; i++) {
+      stepEngine(engine);
+      positions.push({ x: body.position.x, y: body.position.y });
+    }
+    return positions;
   }
 
   position(handle: BodyHandle): Vec {
@@ -101,6 +142,10 @@ export class World {
       x: current.x + change.x / PER_SECOND,
       y: current.y + change.y / PER_SECOND,
     });
+  }
+
+  setFrictionAir(handle: BodyHandle, frictionAir: number): void {
+    this.body(handle).frictionAir = frictionAir;
   }
 
   isBodyStill(handle: BodyHandle): boolean {
@@ -137,6 +182,27 @@ export class World {
     return undefined;
   }
 
+  mass(handle: BodyHandle): number {
+    return this.body(handle).mass;
+  }
+
+  private recordImpact(pair: Matter.Pair): void {
+    const a = this.handlesById.get(pair.bodyA.id);
+    const b = this.handlesById.get(pair.bodyB.id);
+    const support = pair.collision.supports[0];
+    if (!a || !b || !support) return;
+
+    const strength = closingSpeed(pair) * reducedMass(pair.bodyA, pair.bodyB);
+    const previous = this.impacts.get(pair.id);
+    if (previous && previous.strength >= strength) return;
+    this.impacts.set(pair.id, {
+      a,
+      b,
+      strength,
+      point: { x: support.x, y: support.y },
+    });
+  }
+
   private body(handle: BodyHandle): Matter.Body {
     const body = this.bodies.get(handle);
     if (!body) throw new Error("The body was removed from the world");
@@ -153,6 +219,26 @@ function createEngine(): Matter.Engine {
     // A sleeping stack never wakes when its support goes, and floats.
     enableSleeping: false,
   });
+}
+
+function stepEngine(engine: Matter.Engine): void {
+  for (let i = 0; i < SUBSTEPS; i++) Matter.Engine.update(engine, SUBSTEP_MS);
+}
+
+// px/s along the contact normal; the sign doesn't matter, only how fast they meet.
+function closingSpeed(pair: Matter.Pair): number {
+  const va = Matter.Body.getVelocity(pair.bodyA);
+  const vb = Matter.Body.getVelocity(pair.bodyB);
+  const { normal } = pair.collision;
+  const along = (va.x - vb.x) * normal.x + (va.y - vb.y) * normal.y;
+  return Math.abs(along) * PER_SECOND;
+}
+
+// A static body is immovable, so the moving body's own mass takes the whole hit.
+function reducedMass(a: Matter.Body, b: Matter.Body): number {
+  if (a.isStatic) return b.mass;
+  if (b.isStatic) return a.mass;
+  return (a.mass * b.mass) / (a.mass + b.mass);
 }
 
 function createMatterBody(def: BodyDef): Matter.Body {
